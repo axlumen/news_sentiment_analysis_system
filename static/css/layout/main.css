@@ -1,0 +1,353 @@
+/* 
+ * main.css - 新闻情感分析系统主内容区样式
+ * 核心目标：适配多模块数据展示，兼顾响应式与视觉层次
+ */
+
+/* 1. 主内容区基础布局 */
+.main-container {
+  width: 100%;
+  min-height: calc(100vh - 60px); /* 扣除头部高度 */
+  display: flex;
+  background-color: var(--bg-light);
+  padding-top: var(--spacing-md);
+  /* 适配侧边栏固定布局 */
+  transition: padding-left 0.3s ease;
+}
+
+/* 侧边栏展开时调整主内容区左侧间距 */
+.main-container--sidebar-expanded {
+  padding-left: 240px;
+}
+
+/* 主内容滚动区域 */
+.main-content {
+  flex: 1;
+  width: 100%;
+  max-width: calc(100vw - (240px + var(--spacing-lg) * 2)); /* 扣除侧边栏+左右间距 */
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* 2. 页面通用样式 */
+/* 页面标题 */
+.page-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.page-title__icon {
+  color: var(--primary-color);
+  font-size: 20px;
+}
+
+/* 页面描述 */
+.page-desc {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.6;
+}
+
+/* 3. 栅格布局（适配数据卡片排列） */
+/* 行布局 */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 calc(-1 * var(--spacing-sm));
+  margin-bottom: var(--spacing-md);
+}
+
+/* 列布局 */
+.col {
+  flex: 1;
+  padding: 0 var(--spacing-sm);
+  min-width: 280px; /* 最小宽度，保证移动端展示 */
+}
+
+/* 固定列宽（1/2） */
+.col-6 {
+  flex: 0 0 calc(50% - var(--spacing-sm) * 2);
+  max-width: calc(50% - var(--spacing-sm) * 2);
+  padding: 0 var(--spacing-sm);
+}
+
+/* 固定列宽（1/3） */
+.col-4 {
+  flex: 0 0 calc(33.333% - var(--spacing-sm) * 2);
+  max-width: calc(33.333% - var(--spacing-sm) * 2);
+  padding: 0 var(--spacing-sm);
+}
+
+/* 4. 数据概览区（首页核心） */
+.dashboard {
+  margin-bottom: var(--spacing-xl);
+}
+
+/* 概览统计行 */
+.dashboard__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 概览卡片占比 */
+.dashboard__stat-card {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* 5. 新闻列表区 */
+/* 列表筛选栏 */
+.news-filter {
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* 列表分页 */
+.news-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: var(--spacing-xl);
+  gap: var(--spacing-xs);
+}
+
+.pagination-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: var(--transition-base);
+}
+
+.pagination-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.pagination-btn.active {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border-color: var(--primary-color);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-btn:disabled:hover {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* 6. 情感分析可视化区 */
+/* 图表行布局 */
+.chart-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* 单图表容器占比 */
+.chart-col {
+  flex: 1;
+  min-width: 350px;
+}
+
+/* 词云+列表组合布局 */
+.wordcloud-news-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* 词云容器占比 */
+.wordcloud-col {
+  flex: 2;
+  min-width: 400px;
+}
+
+/* 关联新闻列表占比 */
+.related-news-col {
+  flex: 1;
+  min-width: 300px;
+}
+
+/* 7. 空数据状态（通用） */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl) 0;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.empty-state__icon {
+  font-size: 64px;
+  color: var(--border-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.empty-state__text {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.empty-state__desc {
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-lg);
+}
+
+.empty-state__btn {
+  padding: 8px 20px;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-base);
+}
+
+.empty-state__btn:hover {
+  background-color: #0E42D2;
+}
+
+/* 8. 加载状态（通用） */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl) 0;
+}
+
+.loading-state__spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-md);
+}
+
+.loading-state__text {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 9. 响应式适配 */
+/* 平板端（768px以下） */
+@media (max-width: 768px) {
+  .main-container--sidebar-expanded {
+    padding-left: 80px; /* 侧边栏收缩为图标模式 */
+  }
+  
+  .main-content {
+    max-width: 100%;
+    padding: 0 var(--spacing-md);
+  }
+  
+  .col-6, .col-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
+  .chart-col, .wordcloud-col, .related-news-col {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+}
+
+/* 手机端（576px以下） */
+@media (max-width: 576px) {
+  .main-container {
+    padding-top: var(--spacing-sm);
+  }
+  
+  .page-title {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .dashboard__stats {
+    gap: var(--spacing-sm);
+  }
+  
+  .news-filter {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+  
+  .pagination-btn {
+    width: 32px;
+    height: 32px;
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* 10. 辅助布局类 */
+/* 卡片间距 */
+.card-gap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* 弹性垂直居中 */
+.align-center {
+  display: flex;
+  align-items: center;
+}
+
+/* 弹性水平居中 */
+.justify-center {
+  display: flex;
+  justify-content: center;
+}
+
+/* 两端对齐 */
+.justify-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 换行 */
+.wrap {
+  flex-wrap: wrap;
+}
+
+/* 间距补充 */
+.mt-lg { margin-top: var(--spacing-lg); }
+.mb-xl { margin-bottom: var(--spacing-xl); }
+.pt-md { padding-top: var(--spacing-md); }
+.pb-md { padding-bottom: var(--spacing-md); }

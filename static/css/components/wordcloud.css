@@ -1,0 +1,60 @@
+/* 词云容器 */
+.wordcloud-container {
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 词云标题 */
+.wordcloud__title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+/* 词云加载状态 */
+.wordcloud__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.wordcloud__loading-icon {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-sm);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 词云内容区 */
+.wordcloud__content {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+/* 词云交互：hover高亮 */
+.wordcloud__word {
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.wordcloud__word:hover {
+  transform: scale(1.1);
+}

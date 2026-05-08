@@ -1,0 +1,280 @@
+/*
+ * header.css - 新闻情感分析系统顶部导航样式
+ * 核心目标：适配新闻检索、用户操作，兼顾PC/移动端体验
+ */
+
+/* 1. 头部容器基础样式 */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--bg-white);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  z-index: 999;
+  /* 防止内容被遮挡 */
+  padding: 0 var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* 适配侧边栏展开/收起 */
+  transition: padding-left 0.3s ease;
+}
+
+/* 侧边栏展开时调整头部左侧间距（配合业务逻辑） */
+.header--sidebar-expanded {
+  padding-left: 240px;
+}
+
+/* 2. 头部左侧：Logo + 系统名称 */
+.header__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  text-decoration: none;
+  color: var(--primary-color);
+}
+
+.header__logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.header__logo-text {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  /* 新闻系统名称突出显示 */
+  color: var(--primary-color);
+}
+
+/* 移动端隐藏文字，仅保留Logo */
+@media (max-width: 576px) {
+  .header__logo-text {
+    display: none;
+  }
+}
+
+/* 3. 头部中间：新闻搜索框（核心功能） */
+.header__search {
+  flex: 1;
+  max-width: 500px;
+  margin: 0 var(--spacing-lg);
+  position: relative;
+}
+
+.header__search-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 16px 0 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background-color: var(--bg-light);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  transition: var(--transition-base);
+}
+
+/* 搜索框聚焦样式 */
+.header__search-input:focus {
+  border-color: var(--primary-color);
+  background-color: var(--bg-white);
+  box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
+}
+
+/* 搜索图标 */
+.header__search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+/* 移动端缩小搜索框最大宽度 */
+@media (max-width: 768px) {
+  .header__search {
+    max-width: 300px;
+    margin: 0 var(--spacing-sm);
+  }
+}
+
+/* 超小屏隐藏搜索框（通过移动端菜单展示） */
+@media (max-width: 576px) {
+  .header__search {
+    display: none;
+  }
+}
+
+/* 4. 头部右侧：用户操作 + 功能按钮 */
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* 功能按钮（如通知、设置） */
+.header__action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: var(--transition-base);
+  position: relative;
+}
+
+.header__action-btn:hover {
+  background-color: var(--bg-light);
+  color: var(--primary-color);
+}
+
+/* 通知红点提示 */
+.header__action-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--sentiment-negative);
+}
+
+/* 用户信息区域 */
+.header__user {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.header__user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bg-light);
+}
+
+.header__user-name {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  font-weight: 500;
+  /* 移动端隐藏用户名 */
+  display: block;
+}
+
+@media (max-width: 576px) {
+  .header__user-name {
+    display: none;
+  }
+}
+
+/* 未登录状态：登录/注册按钮 */
+.header__auth {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.header__auth-btn {
+  padding: 6px 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: var(--transition-base);
+}
+
+.header__auth-btn--login {
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.header__auth-btn--login:hover {
+  background-color: rgba(22, 93, 255, 0.1);
+}
+
+.header__auth-btn--register {
+  color: var(--bg-white);
+  background-color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.header__auth-btn--register:hover {
+  background-color: #0E42D2;
+}
+
+/* 移动端菜单按钮（侧边栏触发） */
+.header__mobile-menu {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  font-size: 20px;
+}
+
+@media (max-width: 768px) {
+  .header__mobile-menu {
+    display: flex;
+  }
+}
+
+/* 5. 用户下拉菜单（配合JS交互） */
+.header__user-dropdown {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  width: 200px;
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-sm) 0;
+  z-index: 9999;
+  /* 默认隐藏 */
+  display: none;
+}
+
+/* 下拉菜单显示状态 */
+.header__user-dropdown.show {
+  display: block;
+  animation: slideIn 0.2s ease;
+}
+
+.header__dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  transition: var(--transition-base);
+}
+
+.header__dropdown-item:hover {
+  background-color: var(--bg-light);
+  color: var(--primary-color);
+}
+
+.header__dropdown-icon {
+  margin-right: var(--spacing-sm);
+  width: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.header__dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: var(--spacing-sm) 0;
+}
+
+/* 6. 适配主内容区偏移 */
+/* 主内容区需要预留头部高度，避免被遮挡 */
+.main-content {
+  margin-top: 60px;
+}

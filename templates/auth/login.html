@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {% load static %}
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>登录-新闻情感分析系统</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="all,follow">
+  <!-- 本地静态资源引入 -->
+  <link rel="stylesheet" href="{% static 'css/components/login.css' %}?v=1.0">
+  <link rel="stylesheet" href="{% static 'fonts/iconfont.css' %}?v=1.0">
+  <link rel="shortcut icon" href="{% static '../../media/static/img/favicon.png' %}?v=1.0">
+  <link rel="icon" href="{% static '../../media/static/img/favicon.png' %}?v=1.0" type="image/png">
+  <!-- 引入Google字体 -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,800">
+  <!-- 引入Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+</head>
+<body>
+  <!-- 顶部错误提醒 -->
+  {% if form.non_field_errors %}
+    <div class="error-alert">
+      <i class="fas fa-times-circle"></i>
+      <span>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</span>
+    </div>
+  {% endif %}
+
+  <!-- 主容器 -->
+  <div class="login-container">
+    <!-- 左侧背景栏 -->
+    <div class="login-left">
+      <div class="login-left-content">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z" stroke="#4299e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 2V8H20" stroke="#4299e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 13H8" stroke="#4299e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 17H8" stroke="#4299e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 9H9H8" stroke="#4299e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1>新闻情感分析系统</h1>
+        <p>洞察舆情，感知情绪</p>
+      </div>
+    </div>
+
+    <!-- 右侧表单栏 -->
+    <div class="login-right">
+      <div class="login-right-content">
+        <h2>NEWS SENTIMENT ANALYSIS</h2>
+
+        <!-- 消息提示 -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="message-alert">
+              <i class="fas fa-check-circle"></i>
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- 登录表单 -->
+        <form id="loginForm" action="{% url 'user:login' %}" method="post">
+          {% csrf_token %}
+
+          <!-- 用户名 -->
+          <div class="form-group">
+            <label for="username">用户名</label>
+            <input type="text" name="username" id="username" placeholder="请输入用户名"
+                   class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                   value="{{ form.username.value|default:'' }}">
+            {% if form.username.errors %}
+              <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{% for error in form.username.errors %}{{ error }}{% endfor %}</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- 密码 -->
+          <div class="form-group">
+            <label for="password">密码</label>
+            <div class="password-container">
+              <input type="password" name="password" id="password" placeholder="请输入密码"
+                     class="form-control {% if form.password.errors %}is-invalid{% endif %}">
+              <button type="button" class="toggle-password" id="togglePassword">
+                <i class="far fa-eye"></i>
+              </button>
+            </div>
+            {% if form.password.errors %}
+              <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{% for error in form.password.errors %}{{ error }}{% endfor %}</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- 验证码 -->
+          {% if captcha_available %}
+          <div class="form-group">
+            <label for="id_captcha_1">验证码</label>
+            <div class="captcha-row">
+              <input type="text" name="captcha_1" id="id_captcha_1" placeholder="请输入验证码"
+                     class="form-control {% if form.captcha.errors %}is-invalid{% endif %}">
+              <div class="captcha-image" onclick="refreshCaptcha()">
+                {{ form.captcha }}
+              </div>
+            </div>
+            {% if form.captcha.errors %}
+              <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{% for error in form.captcha.errors %}{{ error }}{% endfor %}</span>
+              </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <!-- 记住密码 -->
+          <div class="form-options">
+            <div class="remember-me">
+              <input id="remember" name="remember" type="checkbox">
+              <label for="remember">记住密码</label>
+            </div>
+          </div>
+
+          <!-- 登录按钮 -->
+          <button type="submit" id="loginBtn" class="btn-login">
+            <i class="fas fa-sign-in-alt mr-2"></i>登 录
+          </button>
+
+          <!-- 注册提示 -->
+          <div class="login-footer">
+            <p class="register-link">
+              还没有账号? <a href="{% url 'user:register' %}">去注册</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript - 精简并提升健壮性 -->
+  <script src="{% static 'js/jquery.min.js' %}?v=1.0"></script>
+  <script src="{% static 'vendor/popper.js/umd/popper.min.js' %}?v=1.0"></script>
+  <script src="{% static 'js/bootstrap.min.js' %}?v=1.0"></script>
+  <script src="{% static 'js/login.js' %}?v=1.0"></script>
+</body>
+</html>

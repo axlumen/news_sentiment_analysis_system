@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  {% load static %}
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{% block title %}新闻情感分析系统{% endblock %}</title>
+  <meta name="description" content="基于LSTM的新闻情感分析系统">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="shortcut icon" href="{% static '../media/static/img/favicon.png' %}?v=1.0">
+  <link rel="icon" href="{% static '../media/static/img/favicon.png' %}?v=1.0" type="image/png">
+
+  <!-- 第三方图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <!-- ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+  <!-- 全局样式 -->
+  <style>
+    /* 重置样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      font-size: 14px;
+    }
+    a {
+      text-decoration: none;
+    }
+    ul, li {
+      list-style: none;
+    }
+
+    /* 全局变量 */
+    :root {
+      --primary-color: #007bff;
+      --success-color: #28a745;
+      --info-color: #17a2b8;
+      --warning-color: #ffc107;
+      --danger-color: #dc3545;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --border-color: #e9ecef;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* 核心布局 */
+    .main-container {
+      display: flex;
+      margin-top: 60px; /* 与头部高度匹配 */
+      height: calc(100vh - 60px);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+      width: 200px;
+      min-width: 200px;
+      max-width: 200px;
+      background-color: #fff;
+      border-right: 1px solid var(--border-color);
+      padding: 20px 15px;
+      height: 100%;
+      position: relative;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    /* 主内容区样式 */
+    .main-content {
+      flex: 1;
+      padding: 15px 25px;
+      height: 100%;
+      overflow-y: auto;
+      box-sizing: border-box;
+      background-color: #f8f9fa;
+    }
+
+    /* 隐藏滚动条 */
+    .sidebar::-webkit-scrollbar,
+    .main-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-track,
+    .main-content::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb,
+    .main-content::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover,
+    .main-content::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+
+    /* 响应式适配 */
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 180px;
+        min-width: 180px;
+        max-width: 180px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .sidebar {
+        width: 80%;
+        min-width: 200px;
+        max-width: 300px;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        z-index: 999;
+        height: calc(100vh - 60px);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      }
+      
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        padding: 15px;
+      }
+    }
+  </style>
+
+  <!-- 页面自定义CSS -->
+  {% block custom_css %}{% endblock %}
+</head>
+
+<body>
+  <!-- 头部导航 -->
+  {% include "components/header.html" %}
+
+  <!-- 核心布局容器 -->
+  <div class="main-container">
+    <!-- 侧边栏 -->
+    {% include "components/sidebar.html" %}
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- 页面自定义JS -->
+  {% block custom_js %}{% endblock %}
+</body>
+</html>

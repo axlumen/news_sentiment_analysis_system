@@ -1,0 +1,98 @@
+/* 搜索表单容器 */
+.search-form {
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 表单行布局 */
+.search-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+/* 表单项 */
+.search-form__item {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* 表单标签 */
+.search-form__label {
+  display: block;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+}
+
+/* 表单输入框 */
+.search-form__input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  transition: var(--transition-base);
+}
+
+.search-form__input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
+}
+
+/* 情感筛选下拉框 */
+.search-form__select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background-color: var(--bg-white);
+  cursor: pointer;
+}
+
+/* 表单按钮组 */
+.search-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+/* 搜索按钮 */
+.search-form__btn {
+  padding: 8px 20px;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+  border: none;
+}
+
+.search-form__btn--primary {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+}
+
+.search-form__btn--primary:hover {
+  background-color: #0E42D2;
+}
+
+.search-form__btn--reset {
+  background-color: var(--bg-white);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.search-form__btn--reset:hover {
+  background-color: var(--bg-light);
+}

@@ -1,0 +1,653 @@
+/* 登录和注册页面样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* 主背景改为淡蓝色 */
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa; /* 浅灰色背景，更加自然 */
+  padding: 20px;
+  margin: 0;
+}
+
+/* 注册页面特殊样式 */
+.register-body {
+  background-color: #f5f7fa;
+}
+
+/* 注册主容器 */
+.register-container {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 注册卡片 - 左右两栏布局 */
+.register-card {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  height: 600px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: fadeIn 1s ease-out;
+}
+
+/* 左侧容器 - 淡蓝色背景 */
+.register-left {
+  flex: 1;
+  /* 淡蓝色系渐变 */
+  background: linear-gradient(135deg, #d4e9f1 0%, #b8d8e6 50%, #9dc9da 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #2c3e50;
+  position: relative;
+}
+
+.register-left-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  animation: fadeInUp 1s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.register-left h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-shadow: 0 0 15px rgba(44, 62, 80, 0.2);
+  animation: fadeInUp 1s ease-out 0.2s both;
+  color: #2c3e50;
+}
+
+/* 头像容器 */
+.avatar-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+/* 头像预览 - 圆形框 */
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #4299e1;
+  margin-bottom: 15px;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(66, 153, 225, 0.15);
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 头像上传 */
+.avatar-upload {
+  position: relative;
+  margin-bottom: 10px;
+  width: 100%;
+  max-width: 120px;
+}
+
+.avatar-upload input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.avatar-upload-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 2px dashed #4299e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.avatar-upload-btn:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-color: #3182ce;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(66, 153, 225, 0.1);
+}
+
+.avatar-upload-btn i {
+  font-size: 1rem;
+  color: #4299e1;
+  margin-bottom: 5px;
+}
+
+.avatar-upload-btn span {
+  font-size: 0.75rem;
+  color: #495057;
+}
+
+/* 头像提示 */
+.avatar-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #2c3e50;
+  margin-top: 5px;
+  line-height: 1.3;
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+.register-left p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 0;
+  animation: fadeInUp 1s ease-out 0.4s both;
+  color: #2c3e50;
+}
+
+/* 右侧容器 - 表单字段 */
+.register-right {
+  flex: 1;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  position: relative;
+  overflow-y: auto;
+}
+
+.register-right-content {
+  position: relative;
+  z-index: 1;
+  animation: fadeIn 1s ease-out;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 注册表单组 */
+.register-form-group {
+  margin-bottom: 15px;
+  animation: fadeIn 1s ease-out 0.3s both;
+}
+
+.register-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+/* 注册表单控件 */
+.register-form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.register-form-control:focus {
+  outline: none;
+  border-color: #4299e1; /* 淡蓝色焦点边框 */
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15), 0 2px 8px rgba(66, 153, 225, 0.1);
+  transform: translateY(-1px);
+}
+
+.register-form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+/* 密码输入框容器 */
+.password-container {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+/* 错误提示 */
+.error-message {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #dc3545;
+  display: flex;
+  align-items: center;
+}
+
+.error-message i {
+  margin-right: 8px;
+  font-size: 0.9rem;
+}
+
+/* 验证码样式 */
+.captcha-row {
+  display: flex;
+  gap: 10px;
+}
+
+.captcha-input {
+  flex: 1;
+  border-radius: 8px 0 0 8px;
+}
+
+.captcha-image {
+  border: 1px solid #ced4da;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+}
+
+/* 记住密码和忘记密码 */
+.form-options {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 25px;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  color: #495057;
+}
+
+.remember-me input {
+  margin-right: 8px;
+}
+
+/* 注册按钮 */
+.btn-register {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); /* 淡蓝色按钮 */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  animation: fadeIn 1s ease-out 0.6s both;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
+}
+
+.btn-register:disabled {
+  opacity: 0.8;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 登录提示 */
+.register-footer {
+  text-align: center;
+  font-size: 0.9rem;
+  animation: fadeIn 1s ease-out 0.7s both;
+  margin-top: auto;
+}
+
+.register-footer p {
+  color: #495057;
+}
+
+.register-footer a {
+  color: #4299e1; /* 淡蓝色链接 */
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.register-footer a:hover {
+  text-decoration: underline;
+}
+
+/* 顶部错误提示 */
+.error-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #dc3545;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  animation: slideDown 0.3s ease-out;
+  margin-bottom: 20px;
+}
+
+.error-alert i {
+  margin-right: 8px;
+}
+
+/* 消息提示 */
+.message-alert {
+  padding: 12px 15px;
+  background-color: rgba(66, 153, 225, 0.1); /* 淡蓝色提示背景 */
+  border: 1px solid #4299e1;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  color: #4299e1;
+  animation: fadeIn 1s ease-out 0.4s both;
+}
+
+.message-alert i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+/* 合并动画样式 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { top: -50px; opacity: 0; }
+  to { top: 20px; opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { top: 20px; opacity: 1; }
+  to { top: -50px; opacity: 0; }
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .register-card {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .register-left, .register-right {
+    padding: 30px 20px;
+  }
+
+  .register-left h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* 登录页面样式保持不变 */
+/* 主容器 - 精简样式 */
+.login-container {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  height: 600px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* 左侧栏 - 淡蓝色渐变背景 */
+.login-left {
+  flex: 1;
+  /* 淡蓝色系渐变 */
+  background: linear-gradient(135deg, #d4e9f1 0%, #b8d8e6 50%, #9dc9da 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #2c3e50;
+  position: relative;
+}
+
+.login-left-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  animation: fadeInUp 1s ease-out;
+}
+
+.login-left svg {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 25px;
+  filter: drop-shadow(0 0 12px rgba(66, 153, 225, 0.6));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.login-left h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  text-shadow: 0 0 15px rgba(44, 62, 80, 0.2);
+  animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+.login-left p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 0;
+  animation: fadeInUp 1s ease-out 0.4s both;
+}
+
+/* 右侧表单栏 */
+.login-right {
+  flex: 1;
+  padding: 50px 40px;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fcfe; /* 浅蓝调背景 */
+  position: relative;
+}
+
+.login-right-content {
+  position: relative;
+  z-index: 1;
+  animation: fadeIn 1s ease-out;
+}
+
+.login-right h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 30px;
+  text-align: center;
+  animation: fadeIn 1s ease-out 0.2s both;
+  /* 淡蓝色文字渐变 */
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 表单样式 - 精简合并 */
+.form-group {
+  margin-bottom: 20px;
+  animation: fadeIn 1s ease-out 0.3s both;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #4299e1; /* 淡蓝色焦点边框 */
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15), 0 2px 8px rgba(66, 153, 225, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+/* 验证码样式 */
+.captcha-row .form-control {
+  border-radius: 8px 0 0 8px;
+}
+
+/* 记住密码和忘记密码 */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  font-size: 0.9rem;
+}
+
+.forgot-password {
+  color: #4299e1; /* 淡蓝色链接 */
+  text-decoration: none;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* 按钮样式 - 淡蓝色渐变 */
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); /* 淡蓝色按钮 */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+}
+
+.btn-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
+}
+
+.btn-login:disabled {
+  opacity: 0.8;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 注册提示 */
+.login-footer {
+  text-align: center;
+  font-size: 0.9rem;
+  animation: fadeIn 1s ease-out 0.7s both;
+}
+
+.register-link {
+  color: #495057;
+}
+
+.register-link a {
+  color: #4299e1; /* 淡蓝色注册链接 */
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* 响应式适配 - 精简逻辑 */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .login-left, .login-right {
+    padding: 30px 20px;
+  }
+}

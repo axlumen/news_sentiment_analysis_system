@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}情感关键词词云 & 情感倾向分析 - 新闻情感分析系统{% endblock %}
+
+{% block custom_css %}
+<style>
+  /* 重置父容器布局，解决侧边栏导致的宽度挤压 */
+  .page-holder {
+    min-height: calc(100vh - 60px);
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap; /* 取消换行，避免内容被挤 */
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 15px 0;
+  }
+
+  /* 核心修复：内容容器适配侧边栏，占满剩余宽度 */
+  .container-fluid {
+    padding: 20px;
+    flex: 1; /* 占满侧边栏外的所有宽度 */
+    max-width: none !important; /* 取消最大宽度限制，充分利用空间 */
+    width: auto !important;
+  }
+
+
+
+  /* 图表行：强制大屏并排，宽度100% */
+  .chart-row {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 图表卡片：大屏各占50%，小屏占100% */
+  .chart-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    flex: 1 1 50%; /* 大屏并排：各占50% */
+    min-width: 350px; /* 小屏最小宽度，小于则堆叠 */
+  }
+
+  .chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .chart-card .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+    padding: 15px 20px;
+  }
+
+  .chart-card .card-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0;
+    color: white;
+  }
+
+  .chart-card .card-body {
+    padding: 0;
+    height: 450px; /* 固定图表高度，充分利用空间 */
+  }
+
+  /* 图表容器：占满卡片高度 */
+  #wordcloud, #sentimentBar {
+    width: 100%;
+    height: 100%;
+    border-radius: 0 0 10px 10px;
+    background-color: #fafafa;
+  }
+
+  /* 空状态样式 */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #6c757d;
+    background-color: #fafafa;
+    border-radius: 0 0 10px 10px;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #adb5bd;
+  }
+
+  /* 小屏适配 */
+  @media (max-width: 768px) {
+    .container-fluid {
+      padding: 0 15px;
+      max-width: 95% !important;
+    }
+    .main-card .card-body {
+      padding: 15px;
+    }
+    .chart-row {
+      flex-wrap: wrap;
+    }
+    .chart-card {
+      flex: 1 1 100%; /* 小屏占满宽度 */
+      min-width: unset;
+      margin-bottom: 15px !important;
+    }
+    .chart-card .card-body {
+      height: 320px;
+    }
+  }
+  
+  /* 中屏适配 */
+  @media (min-width: 769px) and (max-width: 992px) {
+    .container-fluid {
+      max-width: 95% !important;
+    }
+    .chart-card .card-body {
+      height: 320px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .main-card .card-header {
+      padding: 12px 15px;
+    }
+    .main-card .card-header h2 {
+      font-size: 1.1rem;
+    }
+    .main-card .card-body {
+      padding: 12px;
+    }
+    .chart-card .card-body {
+      height: 280px;
+    }
+    .empty-state i {
+      font-size: 2.5rem;
+    }
+  }
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-holder">
+  <div class="container-fluid">
+    <section>
+      <div class="chart-row">
+        <!-- 词云区域 -->
+        <div class="chart-card">
+          <div class="card-header">
+            <h3>情感关键词词云</h3>
+          </div>
+          <div class="card-body">
+            <div id="wordcloud"></div>
+          </div>
+        </div>
+
+        <!-- 情感倾向柱状图 -->
+        <div class="chart-card">
+          <div class="card-header">
+            <h3>情感倾向柱状图</h3>
+          </div>
+          <div class="card-body">
+            <div id="sentimentBar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+
+<script>
+  $(function() {
+    // ===================== 词云 =====================
+    var wordChart = echarts.init(document.getElementById('wordcloud'));
+
+    wordChart.showLoading({
+      text: '加载中...',
+      color: '#667eea',
+      textColor: '#666',
+      maskColor: 'rgba(255, 255, 255, 0.8)',
+      zlevel: 0
+    });
+
+    $.get('/api/sentiment_keywords/', function (res) {
+      wordChart.hideLoading();
+
+      if (!res || res.length === 0) {
+        $('#wordcloud').html('<div class="empty-state"><i class="fas fa-cloud"></i><p>暂无关键词数据</p></div>');
+        return;
+      }
+
+      wordChart.setOption({
+        tooltip: {
+          formatter: '{b}<br/>出现次数：{c}',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          textStyle: { color: '#fff' }
+        },
+        series: [{
+          type: 'wordCloud',
+          shape: 'rect',  // 改为矩形形状，更好地利用容器空间
+          sizeRange: [6, 50],  // 保持小字体大小，显示更多词
+          rotationRange: [-45, 45],  // 减小旋转角度范围，使布局更紧凑
+          gridSize: 4,  // 保持小间距，显示更多词
+          textStyle: {
+            fontWeight: 'bold',
+            color: function() {
+              return 'rgb(' + [
+                Math.round(Math.random() * 160 + 40),
+                Math.round(Math.random() * 160 + 40),
+                Math.round(Math.random() * 160 + 40)
+              ].join(',') + ')';
+            }
+          },
+          data: res
+        }]
+      });
+    }).fail(function() {
+      wordChart.hideLoading();
+      $('#wordcloud').html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>数据加载失败</p></div>');
+    });
+
+    // ===================== 情感倾向柱状图 =====================
+    var barChart = echarts.init(document.getElementById('sentimentBar'));
+
+    barChart.showLoading({
+      text: '加载中...',
+      color: '#667eea',
+      textColor: '#666',
+      maskColor: 'rgba(255, 255, 255, 0.8)',
+      zlevel: 0
+    });
+
+    $.get('/api/category_sentiment/', function(res) {
+      barChart.hideLoading();
+
+      if (!res || res.length === 0) {
+        $('#sentimentBar').html('<div class="empty-state"><i class="fas fa-chart-bar"></i><p>暂无分类数据</p></div>');
+        return;
+      }
+
+      var categories = res.map(item => item.category);
+      var positive = res.map(item => item.positive_count);
+      var neutral = res.map(item => item.neutral_count);
+      var negative = res.map(item => item.negative_count);
+
+      barChart.setOption({
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          textStyle: { color: '#fff' }
+        },
+        legend: {
+          data: ['正面', '中性', '负面'],
+          bottom: 0,
+          textStyle: { color: '#666' }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '25%',
+          containLabel: true
+        },
+        xAxis: {
+          data: categories,
+          axisLabel: { interval: 0, rotate: 45, color: '#666' },
+          axisLine: { lineStyle: { color: '#e0e0e0' } }
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: { color: '#666' },
+          axisLine: { lineStyle: { color: '#e0e0e0' } },
+          splitLine: { lineStyle: { color: '#f0f0f0' } }
+        },
+        series: [
+          { name: '正面', type: 'bar', data: positive, itemStyle: { color: '#5470C6' } },
+          { name: '中性', type: 'bar', data: neutral, itemStyle: { color: '#91CC75' } },
+          { name: '负面', type: 'bar', data: negative, itemStyle: { color: '#EE6666' } }
+        ]
+      });
+    }).fail(function() {
+      barChart.hideLoading();
+      $('#sentimentBar').html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>数据加载失败</p></div>');
+    });
+
+    // 响应式重绘
+    $(window).resize(function() {
+      wordChart.resize();
+      barChart.resize();
+    });
+  });
+</script>
+{% endblock %}

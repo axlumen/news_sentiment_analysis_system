@@ -1,0 +1,86 @@
+/* 侧边栏基础样式 */
+.sidebar {
+  width: 240px;
+  background-color: var(--bg-white);
+  border-right: 1px solid var(--border-color);
+  min-height: calc(100vh - 60px);
+  padding: var(--spacing-md) 0;
+  position: sticky;
+  top: 60px;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+/* 侧边栏标题 */
+.sidebar__title {
+  padding: 0 var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* 侧边栏菜单 */
+.sidebar__menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* 菜单项 */
+.sidebar__menu-item {
+  margin: 2px 0;
+}
+
+/* 菜单链接 */
+.sidebar__menu-link {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: var(--font-size-base);
+  border-left: 3px solid transparent;
+  transition: var(--transition-base);
+}
+
+.sidebar__menu-link:hover {
+  background-color: var(--bg-light);
+  color: var(--primary-color);
+}
+
+/* 激活态菜单 */
+.sidebar__menu-link.active {
+  border-left-color: var(--primary-color);
+  background-color: rgba(22, 93, 255, 0.1);
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+/* 菜单图标 */
+.sidebar__menu-icon {
+  margin-right: var(--spacing-sm);
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+/* 情感图例（侧边栏底部） */
+.sidebar__legend {
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.sidebar__legend-title {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.sidebar__legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}

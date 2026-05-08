@@ -1,0 +1,31 @@
+/* 按钮基础样式 */
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  font-family: var(--font-main);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* 主按钮样式 */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #0E42D2;
+}
+
+/* 次要按钮 */
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background-color: #5A6069;
+}

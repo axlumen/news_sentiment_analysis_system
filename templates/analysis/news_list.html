@@ -1,0 +1,605 @@
+{% extends "base.html" %}
+{% block title %}新闻列表 - 新闻情感分析系统{% endblock %}
+
+{% block custom_css %}
+<style>
+  /* 全局样式调整 */
+  .container-fluid {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+
+  /* 筛选区域样式 */
+  .filter-card {
+    background-color: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    margin-top: 0;
+  }
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+  }
+  .filter-item {
+    flex: 1;
+    min-width: 180px;
+  }
+  .filter-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+  .filter-item input, .filter-item select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+  }
+  .filter-item input:focus, .filter-item select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    transform: translateY(-1px);
+  }
+  .filter-actions {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .filter-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .btn-filter {
+    background-color: #3498db;
+    color: white;
+  }
+  .btn-filter:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+  }
+  .btn-reset {
+    background-color: #95a5a6;
+    color: white;
+  }
+  .btn-reset:hover {
+    background-color: #7f8c8d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(149, 165, 166, 0.3);
+  }
+
+  /* 表格容器 */
+  .table-container {
+    max-height: 550px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+  .table {
+    margin-bottom: 0;
+    font-size: 14px;
+    width: 100%;
+  }
+  .table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    color: #333;
+    padding: 10px 10px;
+    white-space: nowrap;
+    font-size: 13px;
+    z-index: 10;
+  }
+  .table tbody td {
+    padding: 8px 10px;
+    vertical-align: middle;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+  }
+  .table tbody tr {
+    transition: background-color 0.3s ease;
+  }
+  .table tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  .table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+
+  /* 标题文字溢出处理 */
+  .title-cell {
+    max-width: 350px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+  /* 链接文字溢出处理 */
+  .link-cell {
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .link-cell a {
+    color: #3498db;
+    transition: color 0.3s ease;
+  }
+  .link-cell a:hover {
+    color: #2980b9;
+    text-decoration: underline;
+  }
+
+  /* 情感标签 */
+  .sentiment-tag {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  .sentiment-positive {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: #27ae60;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+  }
+  .sentiment-negative {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #c0392b;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+  }
+  .sentiment-neutral {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: #2980b9;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+  }
+  .sentiment-tag:hover {
+    transform: scale(1.05);
+  }
+
+  /* 情感得分进度条 */
+  .score-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .score-text {
+    font-size: 14px;
+    color: #555;
+    min-width: 50px;
+    font-weight: 600;
+  }
+  .score-bar {
+    flex: 1;
+    height: 10px;
+    background-color: #e5e7eb;
+    border-radius: 5px;
+    overflow: hidden;
+    min-width: 80px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+  }
+  .score-bar-fill.positive {
+    background-color: #27ae60;
+    background-image: linear-gradient(90deg, #27ae60, #2ecc71);
+  }
+  .score-bar-fill.negative {
+    background-color: #c0392b;
+    background-image: linear-gradient(90deg, #c0392b, #e74c3c);
+  }
+  .score-bar-fill.neutral {
+    background-color: #2980b9;
+    background-image: linear-gradient(90deg, #2980b9, #3498db);
+  }
+
+  /* 分页区域 */
+  .pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+  }
+  .pagination-info {
+    font-size: 14px;
+    color: #555;
+    font-weight: 600;
+  }
+  .pagination {
+    margin: 0;
+    display: flex;
+    align-items: center;
+  }
+  .page-item .page-link {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 4px;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+  }
+  .page-item .page-link:hover {
+    background-color: #e9ecef;
+    border-color: #e5e7eb;
+  }
+  .page-item.active .page-link {
+    background-color: #3498db;
+    border-color: #3498db;
+    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+  }
+  .page-item.disabled .page-link {
+    opacity: 0.6;
+  }
+
+  /* 筛选结果提示 */
+  .filter-result {
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #555;
+    padding: 8px 12px;
+    background-color: #e8f4f8;
+    border-radius: 6px;
+    border-left: 3px solid #3498db;
+    box-shadow: 0 1px 3px rgba(52, 152, 219, 0.1);
+  }
+  .filter-result strong {
+    color: #2980b9;
+  }
+  .filter-result a {
+    color: #3498db;
+    transition: color 0.3s ease;
+  }
+  .filter-result a:hover {
+    color: #2980b9;
+    text-decoration: underline;
+  }
+  
+  /* 卡片样式优化 */
+  .card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: none;
+    box-shadow: none;
+  }
+  .card-header {
+    padding: 0;
+    background-color: #ffffff;
+    border-bottom: none;
+    display: none;
+  }
+  .card-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+  }
+  .card-body {
+    padding: 5px 0 15px 0;
+  }
+  
+  /* 筛选容器样式调整 */
+  .filter-card {
+    margin-top: -15px;
+    margin-bottom: 15px;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .filter-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .filter-actions {
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-xl-5 py-0">
+  <div class="card shadow-sm rounded-lg overflow-hidden">
+    <div class="card-body p-4">
+      <!-- 筛选区域 -->
+      <div class="filter-card">
+        <form id="filterForm">
+          <div class="filter-row">
+            <!-- 关键词筛选 -->
+            <div class="filter-item">
+              <label for="keyword">新闻关键词</label>
+              <input type="text" id="keyword" name="keyword" placeholder="请输入新闻标题/内容关键词"
+                     value="{{ request.GET.keyword|default:'' }}">
+            </div>
+
+            <!-- 情感倾向筛选 -->
+            <div class="filter-item">
+              <label for="sentiment">情感倾向</label>
+              <select id="sentiment" name="sentiment">
+                <option value="">全部</option>
+                <option value="positive" {% if request.GET.sentiment == 'positive' %}selected{% endif %}>正面</option>
+                <option value="negative" {% if request.GET.sentiment == 'negative' %}selected{% endif %}>负面</option>
+                <option value="neutral" {% if request.GET.sentiment == 'neutral' %}selected{% endif %}>中性</option>
+              </select>
+            </div>
+            
+            <!-- 板块筛选 -->
+            <div class="filter-item">
+              <label for="category">板块</label>
+              <select id="category" name="category">
+                <option value="">全部</option>
+                <option value="时事" {% if request.GET.category == '时事' %}selected{% endif %}>时事</option>
+                <option value="财经" {% if request.GET.category == '财经' %}selected{% endif %}>财经</option>
+                <option value="娱乐" {% if request.GET.category == '娱乐' %}selected{% endif %}>娱乐</option>
+                <option value="时尚" {% if request.GET.category == '时尚' %}selected{% endif %}>时尚</option>
+                <option value="科技" {% if request.GET.category == '科技' %}selected{% endif %}>科技</option>
+                <option value="军事" {% if request.GET.category == '军事' %}selected{% endif %}>军事</option>
+                <option value="视频" {% if request.GET.category == '视频' %}selected{% endif %}>视频</option>
+                <option value="房产" {% if request.GET.category == '房产' %}selected{% endif %}>房产</option>
+                <option value="汽车" {% if request.GET.category == '汽车' %}selected{% endif %}>汽车</option>
+                <option value="教育" {% if request.GET.category == '教育' %}selected{% endif %}>教育</option>
+                <option value="健康" {% if request.GET.category == '健康' %}selected{% endif %}>健康</option>
+                <option value="旅游" {% if request.GET.category == '旅游' %}selected{% endif %}>旅游</option>
+                <option value="公益" {% if request.GET.category == '公益' %}selected{% endif %}>公益</option>
+                <option value="文化" {% if request.GET.category == '文化' %}selected{% endif %}>文化</option>
+                <option value="体育" {% if request.GET.category == '体育' %}selected{% endif %}>体育</option>
+                <option value="佛教" {% if request.GET.category == '佛教' %}selected{% endif %}>佛教</option>
+                <option value="湖北频道" {% if request.GET.category == '湖北频道' %}selected{% endif %}>湖北频道</option>
+                <option value="风财讯" {% if request.GET.category == '风财讯' %}selected{% endif %}>风财讯</option>
+                <option value="其他" {% if request.GET.category == '其他' %}selected{% endif %}>其他</option>
+              </select>
+            </div>
+
+            <!-- 开始日期筛选 -->
+            <div class="filter-item">
+              <label for="start_date">发布开始日期</label>
+              <input type="date" id="start_date" name="start_date"
+                     value="{{ request.GET.start_date|default:'' }}">
+            </div>
+
+            <!-- 结束日期筛选 -->
+            <div class="filter-item">
+              <label for="end_date">发布结束日期</label>
+              <input type="date" id="end_date" name="end_date"
+                     value="{{ request.GET.end_date|default:'' }}">
+            </div>
+
+            <!-- 筛选按钮 -->
+            <div class="filter-actions">
+              <button type="submit" class="filter-btn btn-filter">
+                <i class="fas fa-filter mr-1"></i>筛选
+              </button>
+              <button type="button" class="filter-btn btn-reset" id="resetFilter">
+                <i class="fas fa-refresh mr-1"></i>重置
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- 筛选结果提示 -->
+      {% if request.GET.keyword or request.GET.sentiment or request.GET.category or request.GET.start_date or request.GET.end_date %}
+        <div class="filter-result">
+          <strong>筛选条件：</strong>
+          {% if request.GET.keyword %}关键词：{{ request.GET.keyword }}；{% endif %}
+          {% if request.GET.sentiment %}情感倾向：{% if request.GET.sentiment == 'positive' %}正面{% elif request.GET.sentiment == 'negative' %}负面{% else %}中性{% endif %}；{% endif %}
+          {% if request.GET.category %}板块：{{ request.GET.category }}；{% endif %}
+          {% if request.GET.start_date %}开始日期：{{ request.GET.start_date }}；{% endif %}
+          {% if request.GET.end_date %}结束日期：{{ request.GET.end_date }}；{% endif %}
+          <a href="?" class="text-primary ml-2" style="font-size: 12px;">清除所有筛选</a>
+        </div>
+      {% endif %}
+
+      <!-- 新闻表格 -->
+      {% if news_list %}
+      <div class="table-container">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th style="width: 50px; text-align: center; font-weight: 600;">#</th>
+              <th style="width: 320px; font-weight: 600;">标题</th>
+              <th style="width: 100px; text-align: center; font-weight: 600;">来源</th>
+              <th style="width: 100px; text-align: center; font-weight: 600;">板块</th>
+              <th style="width: 200px; font-weight: 600;">链接</th>
+              <th style="width: 110px; text-align: center; font-weight: 600;">发布日期</th>
+              <th style="width: 130px; text-align: center; font-weight: 600;">创建时间</th>
+              <th style="width: 100px; text-align: center; font-weight: 600;">情感倾向</th>
+              <th style="width: 120px; text-align: center; font-weight: 600;">情感得分</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for news in news_list %}
+            <tr>
+              <td style="text-align: center;">{{ forloop.counter }}</td>
+              <td class="title-cell" title="{{ news.title_clean }}">{{ news.title_clean }}</td>
+              <td style="text-align: center;">{{ news.source|default:"-" }}</td>
+              <td style="text-align: center;">{{ news.category|default:"-" }}</td>
+              <td class="link-cell">
+                <a href="{{ news.url }}" target="_blank" class="text-primary">{{ news.url|truncatechars:25 }}</a>
+              </td>
+              <td style="text-align: center;">{{ news.publish_date|date:"Y-m-d"|default:"-" }}</td>
+              <td style="text-align: center;">{{ news.create_time|date:"Y-m-d H:i" }}</td>
+              <td style="text-align: center;">
+                {% if news.sentiment == 'positive' %}
+                  <span class="sentiment-tag sentiment-positive">正面</span>
+                {% elif news.sentiment == 'negative' %}
+                  <span class="sentiment-tag sentiment-negative">负面</span>
+                {% else %}
+                  <span class="sentiment-tag sentiment-neutral">中性</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="score-wrapper">
+                  <span class="score-text">{{ news.sentiment_score|floatformat:2|default:"-" }}</span>
+                  <div class="score-bar">
+                    <div class="score-bar-fill {% if news.sentiment == 'positive' %}positive{% elif news.sentiment == 'negative' %}negative{% else %}neutral{% endif %}"
+                         style="width: {{ news.sentiment_score_percent|default:0 }}%;"></div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 分页 -->
+      <div class="pagination-wrapper">
+        <div class="pagination-info">
+          显示 {{ news_list.start_index }} 到 {{ news_list.end_index }} 条，共 {{ news_list.paginator.count }} 条
+        </div>
+        <nav>
+          <ul class="pagination">
+            {% if news_list.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ news_list.previous_page_number }}
+                  {% if request.GET.keyword %}&keyword={{ request.GET.keyword }}{% endif %}
+                  {% if request.GET.sentiment %}&sentiment={{ request.GET.sentiment }}{% endif %}
+                  {% if request.GET.category %}&category={{ request.GET.category }}{% endif %}
+                  {% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}
+                  {% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}">«</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">«</span>
+              </li>
+            {% endif %}
+
+            {% for num in news_list.paginator.page_range %}
+              {% if num <= 5 %}
+                {% if news_list.number == num %}
+                  <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                  </li>
+                {% else %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}
+                      {% if request.GET.keyword %}&keyword={{ request.GET.keyword }}{% endif %}
+                      {% if request.GET.sentiment %}&sentiment={{ request.GET.sentiment }}{% endif %}
+                      {% if request.GET.category %}&category={{ request.GET.category }}{% endif %}
+                      {% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}
+                      {% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}">{{ num }}</a>
+                  </li>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+            {% if news_list.paginator.num_pages > 5 %}
+              <li class="page-item disabled">
+                <span class="page-link">...</span>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ news_list.paginator.num_pages }}
+                  {% if request.GET.keyword %}&keyword={{ request.GET.keyword }}{% endif %}
+                  {% if request.GET.sentiment %}&sentiment={{ request.GET.sentiment }}{% endif %}
+                  {% if request.GET.category %}&category={{ request.GET.category }}{% endif %}
+                  {% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}
+                  {% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}">{{ news_list.paginator.num_pages }}</a>
+              </li>
+            {% endif %}
+
+            {% if news_list.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ news_list.next_page_number }}
+                  {% if request.GET.keyword %}&keyword={{ request.GET.keyword }}{% endif %}
+                  {% if request.GET.sentiment %}&sentiment={{ request.GET.sentiment }}{% endif %}
+                  {% if request.GET.category %}&category={{ request.GET.category }}{% endif %}
+                  {% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}
+                  {% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}">»</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">»</span>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% else %}
+      <div class="text-center py-12">
+        <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
+          <i class="fas fa-newspaper text-5xl text-gray-300"></i>
+        </div>
+        <h5 class="text-gray-600 font-medium">暂无新闻数据</h5>
+        {% if request.GET.keyword or request.GET.sentiment or request.GET.start_date or request.GET.end_date %}
+          <p class="text-gray-500 mt-2">未找到符合筛选条件的新闻</p>
+          <a href="?" class="btn btn-outline-primary btn-sm mt-4 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-primary hover:text-white">
+            清除筛选条件
+          </a>
+        {% else %}
+          <p class="text-gray-500 mt-2">系统中还没有新闻数据，请先爬取或导入新闻</p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+  $(document).ready(function() {
+    // 筛选表单提交
+    $('#filterForm').on('submit', function(e) {
+      e.preventDefault();
+      const formData = $(this).serialize();
+      window.location.href = '?' + formData;
+    });
+
+    // 重置筛选条件
+    $('#resetFilter').on('click', function() {
+      $('#filterForm')[0].reset();
+      window.location.href = '?';
+    });
+
+    // 日期选择限制：结束日期不能早于开始日期
+    $('#end_date').on('change', function() {
+      const startDate = $('#start_date').val();
+      const endDate = $(this).val();
+      if (startDate && endDate && endDate < startDate) {
+        alert('结束日期不能早于开始日期');
+        $(this).val('');
+      }
+    });
+
+    $('#start_date').on('change', function() {
+      const endDate = $('#end_date').val();
+      const startDate = $(this).val();
+      if (endDate && startDate && startDate > endDate) {
+        alert('开始日期不能晚于结束日期');
+        $('#end_date').val('');
+      }
+    });
+  });
+</script>
+{% endblock %}

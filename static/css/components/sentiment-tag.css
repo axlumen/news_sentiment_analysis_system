@@ -1,0 +1,37 @@
+/* 情感标签基础样式 */
+.sentiment-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 情感类型变体 */
+.sentiment-tag--positive {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--sentiment-positive);
+  border: 1px solid var(--sentiment-positive);
+}
+
+.sentiment-tag--neutral {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: var(--sentiment-neutral);
+  border: 1px solid var(--sentiment-neutral);
+}
+
+.sentiment-tag--negative {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--sentiment-negative);
+  border: 1px solid var(--sentiment-negative);
+}
+
+/* 大号标签（用于统计页） */
+.sentiment-tag--lg {
+  padding: 4px 12px;
+  font-size: var(--font-size-base);
+  border-radius: var(--border-radius-md);
+}

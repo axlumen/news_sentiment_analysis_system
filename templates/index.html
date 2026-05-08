@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}数据概览 - 新闻情感分析系统{% endblock %}
+
+{% block custom_css %}
+<style>
+  /* 页面标题 */
+  .page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  .page-desc {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 30px;
+  }
+
+  /* 统计卡片 */
+  .stats-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+  }
+  .stat-card {
+    flex: 1;
+    min-width: 200px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .stat-info h6 {
+    color: #6c757d;
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+  }
+  .stat-value.positive { color: var(--success-color); }
+  .stat-value.neutral { color: var(--primary-color); }
+  .stat-value.negative { color: var(--danger-color); }
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  /* 图表容器 */
+  .chart-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 30px;
+    height: 400px;
+  }
+
+  /* 图表标题 */
+  .chart-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 页面标题 -->
+<h1 class="page-title">新闻情感分析数据概览</h1>
+<p class="page-desc">
+  基于LSTM深度学习模型的新闻情感分析结果汇总，覆盖
+  <span style="color: var(--success-color);">正面</span>、
+  <span style="color: var(--primary-color);">中性</span>、
+  <span style="color: var(--danger-color);">负面</span>三类情感维度，数据实时更新。
+</p>
+
+<!-- 统计卡片 -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-info">
+      <h6>分析新闻总数</h6>
+      <div class="stat-value">{{ sentiment_stats.total|default:0|intcomma }}</div>
+    </div>
+    <div class="stat-icon" style="background: #e8f4f8; color: var(--primary-color);">
+      <i class="fas fa-newspaper"></i>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-info">
+      <h6>正面情感数量</h6>
+      <div class="stat-value positive">{{ sentiment_stats.positive|default:0|intcomma }}</div>
+      {% if sentiment_stats.total > 0 %}
+      <div class="stat-percentage" style="font-size: 12px; color: #6c757d; margin-top: 5px;">{{ sentiment_stats.positive_percent|default:0 }}%</div>
+      {% else %}
+      <div class="stat-percentage" style="font-size: 12px; color: #6c757d; margin-top: 5px;">0%</div>
+      {% endif %}
+    </div>
+    <div class="stat-icon" style="background: #e8f8e8; color: var(--success-color);">
+      <i class="fas fa-smile"></i>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-info">
+      <h6>中性情感数量</h6>
+      <div class="stat-value neutral">{{ sentiment_stats.neutral|default:0|intcomma }}</div>
+      {% if sentiment_stats.total > 0 %}
+      <div class="stat-percentage" style="font-size: 12px; color: #6c757d; margin-top: 5px;">{{ sentiment_stats.neutral_percent|default:0 }}%</div>
+      {% else %}
+      <div class="stat-percentage" style="font-size: 12px; color: #6c757d; margin-top: 5px;">0%</div>
+      {% endif %}
+    </div>
+    <div class="stat-icon" style="background: #f0f8ff; color: var(--primary-color);">
+      <i class="fas fa-meh"></i>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-info">
+      <h6>负面情感数量</h6>
+      <div class="stat-value negative">{{ sentiment_stats.negative|default:0|intcomma }}</div>
+      {% if sentiment_stats.total > 0 %}
+      <div class="stat-percentage" style="font-size: 12px; color: #6c757d; margin-top: 5px;">{{ sentiment_stats.negative_percent|default:0 }}%</div>
+      {% else %}
+      <div class="stat-percentage" style="font-size: 12px; color: #6c757d; margin-top: 5px;">0%</div>
+      {% endif %}
+    </div>
+    <div class="stat-icon" style="background: #fdf2f2; color: var(--danger-color);">
+      <i class="fas fa-frown"></i>
+    </div>
+  </div>
+</div>
+
+<!-- 情感趋势图表 -->
+<div class="chart-container">
+  <h3 class="chart-title">近7天情感趋势</h3>
+  <canvas id="trendChart"></canvas>
+</div>
+
+<!-- 分类情感图表 -->
+<div class="chart-container">
+  <h3 class="chart-title">新闻分类情感分布</h3>
+  <canvas id="categoryChart"></canvas>
+</div>
+
+{% endblock %}
+
+{% block custom_js %}
+<script>
+// 渲染情感趋势图表
+document.addEventListener('DOMContentLoaded', function() {
+  // 准备趋势数据
+  const trendLabels = [{% for item in trend_data %}"{{ item.date|date:'Y-m-d' }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+  const positiveData = [{% for item in trend_data %}{{ item.positive_count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const neutralData = [{% for item in trend_data %}{{ item.neutral_count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const negativeData = [{% for item in trend_data %}{{ item.negative_count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  // 渲染趋势图表
+  const trendCtx = document.getElementById('trendChart').getContext('2d');
+  new Chart(trendCtx, {
+    type: 'line',
+    data: {
+      labels: trendLabels,
+      datasets: [
+        {
+          label: '正面情感',
+          data: positiveData,
+          borderColor: 'var(--success-color)',
+          backgroundColor: 'rgba(40, 167, 69, 0.1)',
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: '中性情感',
+          data: neutralData,
+          borderColor: 'var(--primary-color)',
+          backgroundColor: 'rgba(0, 123, 255, 0.1)',
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: '负面情感',
+          data: negativeData,
+          borderColor: 'var(--danger-color)',
+          backgroundColor: 'rgba(220, 53, 69, 0.1)',
+          tension: 0.3,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { 
+        y: { 
+          beginAtZero: true,
+          title: { 
+            display: true,
+            text: '新闻数量'
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: '日期'
+          }
+        }
+      }
+    }
+  });
+
+  // 准备分类数据
+  const categoryLabels = [{% for item in category_data %}"{{ item.category }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+  const categoryPositiveData = [{% for item in category_data %}{{ item.positive_count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const categoryNeutralData = [{% for item in category_data %}{{ item.neutral_count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const categoryNegativeData = [{% for item in category_data %}{{ item.negative_count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  // 渲染分类图表
+  const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+  new Chart(categoryCtx, {
+    type: 'bar',
+    data: {
+      labels: categoryLabels,
+      datasets: [
+        {
+          label: '正面情感',
+          data: categoryPositiveData,
+          backgroundColor: 'rgba(255, 200, 87, 0.7)'
+        },
+        {
+          label: '中性情感',
+          data: categoryNeutralData,
+          backgroundColor: 'rgba(105, 182, 255, 0.7)'
+        },
+        {
+          label: '负面情感',
+          data: categoryNegativeData,
+          backgroundColor: 'rgba(255, 128, 128, 0.7)'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { 
+        y: { 
+          beginAtZero: true,
+          title: { 
+            display: true,
+            text: '新闻数量'
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: '新闻分类'
+          }
+        }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

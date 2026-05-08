@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}个人设置 - 新闻情感分析系统{% endblock %}
+
+{% block custom_css %}
+<style>
+  /* 个人设置页面样式 */
+  .profile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px 0;
+  }
+  
+  .profile-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  
+  .profile-card-header {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+  }
+  
+  .profile-card-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .profile-card-body {
+    padding: 20px;
+  }
+  
+  /* 头像上传样式 */
+  .avatar-upload {
+    position: relative;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+  
+  .avatar-upload .avatar-edit {
+    position: absolute;
+    right: 12px;
+    z-index: 1;
+    top: 10px;
+  }
+  
+  .avatar-upload .avatar-edit input {
+    display: none;
+  }
+  
+  .avatar-upload .avatar-edit input + label {
+    display: inline-block;
+    width: 34px;
+    height: 34px;
+    margin-bottom: 0;
+    border-radius: 100%;
+    background: #ffffff;
+    border: 1px solid transparent;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    font-weight: normal;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .avatar-upload .avatar-edit input + label:hover {
+    background: #f1f1f1;
+    border-color: #d6d6d6;
+  }
+  
+  .avatar-upload .avatar-edit input + label i {
+    color: #757575;
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    margin: auto;
+  }
+  
+  .avatar-upload .avatar-preview {
+    width: 192px;
+    height: 192px;
+    position: relative;
+    border-radius: 100%;
+    border: 6px solid #f8f8f8;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1);
+  }
+  
+  .avatar-upload .avatar-preview > div {
+    width: 100%;
+    height: 100%;
+    border-radius: 100%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  
+  /* 表单样式 */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+  }
+  
+  .form-control {
+    width: 100%;
+    max-width: 450px;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  
+  .form-control:focus {
+    border-color: #007bff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+  
+  .form-control:disabled {
+    background-color: #f8f9fa;
+    opacity: 1;
+  }
+  
+  /* 按钮样式 */
+  .btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    border-radius: 4px;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    cursor: pointer;
+  }
+  
+  .btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+  
+  .btn-primary:hover {
+    color: #fff;
+    background-color: #0069d9;
+    border-color: #0062cc;
+  }
+  
+  .btn-secondary {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+  }
+  
+  .btn-secondary:hover {
+    color: #fff;
+    background-color: #5a6268;
+    border-color: #545b62;
+  }
+  
+  .btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+  
+  /* 消息提示样式 */
+  .alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .alert-success {
+    color: #155724;
+    background-color: #e6f7ee;
+  }
+  
+  .alert-danger {
+    color: #fff;
+    background-color: #dc3545;
+  }
+  
+  .alert-dismissible {
+    padding-right: 35px;
+  }
+  
+  .alert-dismissible .close {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    opacity: 1;
+  }
+  
+  .close {
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: none;
+    opacity: 1;
+  }
+  
+  .close:hover {
+    color: #fff;
+    text-decoration: none;
+    opacity: 0.8;
+  }
+  
+  .close:not(:disabled):not(.disabled) {
+    cursor: pointer;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+  <!-- 消息提示 -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+        {% if message.tags == 'success' %}
+          <span class="mr-2"><i class="fas fa-check-circle"></i></span>
+        {% else %}
+          <span class="mr-2"><i class="fas fa-times-circle"></i></span>
+        {% endif %}
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endfor %}
+  {% endif %}
+  
+  <script>
+  // 3秒后自动关闭消息提示
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      var alerts = document.querySelectorAll('.alert');
+      alerts.forEach(function(alert) {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(function() {
+          alert.remove();
+        }, 500);
+      });
+    }, 3000);
+  });
+  </script>
+  
+  <!-- 个人设置卡片 -->
+  <div class="profile-card">
+    <div class="profile-card-header">
+      <h2>个人设置</h2>
+    </div>
+    <div class="profile-card-body">
+      <form id="profileForm" method="POST" action="{% url 'user:profile' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- 头像上传 -->
+        <div class="text-center mb-6">
+          <div class="avatar-upload" style="margin: 0 auto;">
+            <div class="avatar-preview">
+              <div id="imagePreview" style="background-image: url({% if user.avatar %}/media/{{ user.avatar }}{% else %}/media/static/img/avatar-6.jpg{% endif %})">
+              </div>
+            </div>
+            <div class="avatar-edit">
+              <input type="file" id="avatar" name="avatar" accept=".png, .jpg, .jpeg">
+              <label for="avatar"><i class="fas fa-camera"></i></label>
+            </div>
+          </div>
+          <p class="text-muted mt-3" style="font-size: 14px; color: #6c757d; text-align: center;">点击更换头像</p>
+        </div>
+        
+        <!-- 个人信息表单 -->
+        <div class="form-container" style="max-width: 450px; margin: 0 auto;">
+          <div class="form-group">
+            <label for="username">用户名</label>
+            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" disabled>
+          </div>
+          <div class="form-group">
+            <label for="email">电子邮箱</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+          </div>
+          <div class="form-group">
+            <label for="phone">电话号码</label>
+            <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone|default:'' }}">
+          </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="mt-5 text-center" style="max-width: 450px; margin: 0 auto;">
+          <button type="submit" id="saveBtn" class="btn btn-primary">保存修改</button>
+          <a href="{% url 'user:change_password' %}" class="btn btn-secondary ml-3">修改密码</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 添加加载状态
+    const profileForm = document.getElementById('profileForm');
+    const saveBtn = document.getElementById('saveBtn');
+    
+    if (profileForm && saveBtn) {
+      profileForm.addEventListener('submit', function() {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
+      });
+    }
+    
+    // 头像预览功能
+    function readURL(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imagePreview = document.getElementById('imagePreview');
+          if (imagePreview) {
+            imagePreview.style.backgroundImage = 'url(' + e.target.result + ')';
+            imagePreview.style.display = 'none';
+            setTimeout(function() {
+              imagePreview.style.display = 'block';
+            }, 10);
+          }
+        }
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+    
+    const avatarInput = document.getElementById('avatar');
+    if (avatarInput) {
+      avatarInput.addEventListener('change', function() {
+        readURL(this);
+      });
+    }
+  });
+</script>
+{% endblock %}

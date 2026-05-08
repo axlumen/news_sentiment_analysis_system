@@ -1,0 +1,39 @@
+/* 情感主题色：正面(绿)、中性(蓝)、负面(红)、主色(深蓝) */
+:root {
+  /* 情感核心色 */
+  --sentiment-positive: #28a745;  /* 正面情感 */
+  --sentiment-neutral: #007bff;   /* 中性情感 */
+  --sentiment-negative: #dc3545;  /* 负面情感 */
+  --primary-color: #165DFF;       /* 系统主色 */
+
+  /* 辅助色 */
+  --text-primary: #333333;        /* 主要文本 */
+  --text-secondary: #6c757d;      /* 次要文本 */
+  --bg-light: #f5f7fa;            /* 浅色背景 */
+  --bg-white: #ffffff;            /* 白色背景 */
+  --border-color: #e9ecef;        /* 边框色 */
+
+  /* 间距变量 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* 字体变量 */
+  --font-main: "Noto Sans SC", "Microsoft YaHei", sans-serif;  /* 适配中文新闻 */
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+
+  /* 圆角/阴影 */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  /* 动画过渡 */
+  --transition-base: all 0.3s ease;
+}

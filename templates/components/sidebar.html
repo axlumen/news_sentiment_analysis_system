@@ -1,0 +1,103 @@
+<!-- templates/components/sidebar.html -->
+<div class="sidebar">
+  <!-- 菜单标题 -->
+  <div style="
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+  ">主菜单</div>
+
+  <!-- 菜单列表 -->
+  <ul style="padding: 0;">
+    <!-- 主页 -->
+    <li style="margin-bottom: 8px;">
+      <a href="{% url 'app:index' %}" style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        color: #333;
+        font-size: 14px;
+        transition: all 0.2s;
+      " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
+        <i class="fas fa-home"></i>
+        <span>主页</span>
+      </a>
+    </li>
+
+    <!-- 新闻数据展示 -->
+    <li style="margin-bottom: 8px;">
+      <a href="{% url 'app:news_list' %}" style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        color: #333;
+        font-size: 14px;
+        transition: all 0.2s;
+      " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
+        <i class="fas fa-list"></i>
+        <span>新闻数据展示</span>
+      </a>
+    </li>
+
+    <!-- 情感分析可视化 -->
+    <li style="margin-bottom: 8px;">
+      <a href="{% url 'app:dashboard' %}" style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        color: #333;
+        font-size: 14px;
+        transition: all 0.2s;
+      " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
+        <i class="fas fa-map-marked-alt"></i>
+        <span>情感分析可视化</span>
+      </a>
+    </li>
+
+
+    <!-- 情感关键词词云 -->
+    <li style="margin-bottom: 8px;">
+      <a href="{% url 'app:hot_search_wordcloud' %}" style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        color: #333;
+        font-size: 14px;
+        transition: all 0.2s;
+      " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
+        <i class="fas fa-cloud"></i>
+        <span>情感关键词词云</span>
+      </a>
+    </li>
+
+    <!-- 情感分析 -->
+    <li style="margin-bottom: 8px;">
+      <a href="{% url 'app:sentiment_analysis' %}" style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        color: #333;
+        font-size: 14px;
+        transition: all 0.2s;
+      " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
+        <i class="fas fa-heart"></i>
+        <span>情感分析</span>
+      </a>
+    </li>
+
+
+  </ul>
+</div>

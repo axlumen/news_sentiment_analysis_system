@@ -1,0 +1,477 @@
+{% extends 'base.html' %}
+
+{% block title %}可视化仪表盘 - 新闻情感分析系统{% endblock %}
+
+{% block custom_css %}
+<style>
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        min-height: 400px;
+    }
+    
+    .chart-title {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .chart {
+        width: 100%;
+        height: 350px;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .chart-container {
+            min-height: 300px;
+        }
+        
+        .chart {
+            height: 250px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- 整体情感统计 -->
+    <div class="chart-container">
+        <div class="chart-title">整体情感统计</div>
+        <div id="overall-chart" class="chart"></div>
+    </div>
+    
+    <!-- 每日情感趋势 -->
+    <div class="chart-container">
+        <div class="chart-title">每日情感趋势</div>
+        <div id="date-chart" class="chart"></div>
+    </div>
+    
+    <!-- 分类情感统计 -->
+    <div class="chart-container">
+        <div class="chart-title">分类情感统计</div>
+        <div id="category-chart" class="chart"></div>
+    </div>
+    
+    <!-- 来源情感统计 -->
+    <div class="chart-container">
+        <div class="chart-title">来源情感统计</div>
+        <div id="source-chart" class="chart"></div>
+    </div>
+    
+    <!-- 情感得分分布 -->
+    <div class="chart-container">
+        <div class="chart-title">情感得分分布</div>
+        <div id="score-chart" class="chart"></div>
+    </div>
+    
+    <!-- 情感关键词 -->
+    <div class="chart-container">
+        <div class="chart-title">情感关键词</div>
+        <div id="keywords-chart" class="chart"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+    // 整体情感统计
+    function initOverallChart() {
+        const chart = echarts.init(document.getElementById('overall-chart'));
+        
+        fetch('/api/overall_sentiment/')
+            .then(response => response.json())
+            .then(data => {
+                const option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c} ({d}%)'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 10,
+                        data: ['正面', '中性', '负面']
+                    },
+                    series: [
+                        {
+                            name: '情感分布',
+                            type: 'pie',
+                            radius: ['50%', '70%'],
+                            avoidLabelOverlap: false,
+                            itemStyle: {
+                                borderRadius: 10,
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            label: {
+                                show: false,
+                                position: 'center'
+                            },
+                            emphasis: {
+                                label: {
+                                    show: true,
+                                    fontSize: '18',
+                                    fontWeight: 'bold'
+                                }
+                            },
+                            labelLine: {
+                                show: false
+                            },
+                            data: [
+                                { value: data.positive_count, name: '正面' },
+                                { value: data.neutral_count, name: '中性' },
+                                { value: data.negative_count, name: '负面' }
+                            ],
+                            color: ['#52c41a', '#1890ff', '#ff4d4f']
+                        }
+                    ]
+                };
+                chart.setOption(option);
+            });
+    }
+    
+    // 每日情感趋势
+    function initDateChart() {
+        const chart = echarts.init(document.getElementById('date-chart'));
+        
+        fetch('/api/daily_sentiment/')
+            .then(response => response.json())
+            .then(data => {
+                const dates = data.map(item => item.date);
+                const positive = data.map(item => item.positive_count);
+                const neutral = data.map(item => item.neutral_count);
+                const negative = data.map(item => item.negative_count);
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            label: {
+                                backgroundColor: '#6a7985'
+                            }
+                        }
+                    },
+                    legend: {
+                        data: ['正面', '中性', '负面']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: dates
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [
+                        {
+                            name: '正面',
+                            type: 'line',
+                            stack: 'Total',
+                            areaStyle: {
+                                color: 'rgba(82, 196, 26, 0.3)'
+                            },
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: positive,
+                            color: '#52c41a'
+                        },
+                        {
+                            name: '中性',
+                            type: 'line',
+                            stack: 'Total',
+                            areaStyle: {
+                                color: 'rgba(24, 144, 255, 0.3)'
+                            },
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: neutral,
+                            color: '#1890ff'
+                        },
+                        {
+                            name: '负面',
+                            type: 'line',
+                            stack: 'Total',
+                            areaStyle: {
+                                color: 'rgba(255, 77, 79, 0.3)'
+                            },
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: negative,
+                            color: '#ff4d4f'
+                        }
+                    ]
+                };
+                chart.setOption(option);
+            });
+    }
+    
+    // 分类情感统计
+    function initCategoryChart() {
+        const chart = echarts.init(document.getElementById('category-chart'));
+        
+        fetch('/api/category_sentiment/')
+            .then(response => response.json())
+            .then(data => {
+                const categories = data.map(item => item.category);
+                const positive = data.map(item => item.positive_count);
+                const neutral = data.map(item => item.neutral_count);
+                const negative = data.map(item => item.negative_count);
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    legend: {
+                        data: ['正面', '中性', '负面']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value'
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: categories
+                    },
+                    series: [
+                        {
+                            name: '正面',
+                            type: 'bar',
+                            stack: 'total',
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: positive,
+                            color: '#52c41a'
+                        },
+                        {
+                            name: '中性',
+                            type: 'bar',
+                            stack: 'total',
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: neutral,
+                            color: '#1890ff'
+                        },
+                        {
+                            name: '负面',
+                            type: 'bar',
+                            stack: 'total',
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: negative,
+                            color: '#ff4d4f'
+                        }
+                    ]
+                };
+                chart.setOption(option);
+            });
+    }
+    
+    // 来源情感统计
+    function initSourceChart() {
+        const chart = echarts.init(document.getElementById('source-chart'));
+        
+        fetch('/api/source_sentiment/')
+            .then(response => response.json())
+            .then(data => {
+                const sources = data.map(item => item.source);
+                const scores = data.map(item => item.avg_sentiment_score);
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value',
+                        min: 0,
+                        max: 1
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: sources
+                    },
+                    series: [
+                        {
+                            name: '平均情感得分',
+                            type: 'bar',
+                            data: scores,
+                            itemStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                    { offset: 0, color: '#52c41a' },
+                                    { offset: 1, color: '#1890ff' }
+                                ])
+                            }
+                        }
+                    ]
+                };
+                chart.setOption(option);
+            });
+    }
+    
+    // 情感得分分布
+    function initScoreChart() {
+        const chart = echarts.init(document.getElementById('score-chart'));
+        
+        fetch('/api/score_distribution/')
+            .then(response => response.json())
+            .then(data => {
+                const ranges = data.map(item => item.score_range);
+                const counts = data.map(item => item.count);
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: ranges
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [
+                        {
+                            name: '数量',
+                            type: 'bar',
+                            data: counts,
+                            itemStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: '#1890ff' },
+                                    { offset: 1, color: '#52c41a' }
+                                ])
+                            }
+                        }
+                    ]
+                };
+                chart.setOption(option);
+            });
+    }
+    
+    // 情感关键词
+    function initKeywordsChart() {
+        const chart = echarts.init(document.getElementById('keywords-chart'));
+        
+        fetch('/api/sentiment_keywords/')
+            .then(response => response.json())
+            .then(data => {
+                const keywords = data.map(item => item.keyword);
+                const frequencies = data.map(item => item.frequency);
+                const sentiments = data.map(item => {
+                    switch(item.sentiment) {
+                        case 'positive': return '#52c41a';
+                        case 'negative': return '#ff4d4f';
+                        default: return '#1890ff';
+                    }
+                });
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value'
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: keywords
+                    },
+                    series: [
+                        {
+                            name: '出现频率',
+                            type: 'bar',
+                            data: frequencies.map((value, index) => ({
+                                value: value,
+                                itemStyle: {
+                                    color: sentiments[index]
+                                }
+                            }))
+                        }
+                    ]
+                };
+                chart.setOption(option);
+            });
+    }
+    
+    // 初始化所有图表
+    window.onload = function() {
+        initOverallChart();
+        initDateChart();
+        initCategoryChart();
+        initSourceChart();
+        initScoreChart();
+        initKeywordsChart();
+        
+        // 响应式处理
+        window.addEventListener('resize', function() {
+            const charts = ['overall-chart', 'date-chart', 'category-chart', 'source-chart', 'score-chart', 'keywords-chart'];
+            charts.forEach(id => {
+                const chart = echarts.getInstanceByDom(document.getElementById(id));
+                if (chart) {
+                    chart.resize();
+                }
+            });
+        });
+    };
+</script>
+{% endblock %}

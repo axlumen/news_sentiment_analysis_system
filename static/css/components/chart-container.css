@@ -1,0 +1,69 @@
+/* 图表容器基础样式 */
+.chart-container {
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 图表标题栏 */
+.chart__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.chart__title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* 图表筛选器（时间/维度切换） */
+.chart__filter {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.chart__filter-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--bg-white);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.chart__filter-btn.active {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border-color: var(--primary-color);
+}
+
+/* 图表内容区 */
+.chart__content {
+  width: 100%;
+  height: 400px;
+  position: relative;
+}
+
+/* 空数据状态 */
+.chart__empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.chart__empty-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-sm);
+  color: var(--border-color);
+}

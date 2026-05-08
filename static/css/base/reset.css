@@ -1,0 +1,176 @@
+/* 
+ * reset.css - 新闻情感分析系统样式重置
+ * 核心目标：清除浏览器默认样式，统一基础排版，适配中文新闻阅读
+ */
+
+/* 1. 全局样式重置：清除默认边距、内边距，统一盒模型 */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* 禁止文字选中（可选，根据业务需求调整） */
+  /* user-select: none; */
+}
+
+/* 2. HTML/Body 基础重置：适配中文排版，统一滚动行为 */
+html {
+  /* 1rem = 10px 便于计算，适配不同屏幕 */
+  font-size: 62.5%;
+  /* 平滑滚动，适配新闻长页面阅读 */
+  scroll-behavior: smooth;
+  /* 防止横向滚动 */
+  overflow-x: hidden;
+}
+
+body {
+  /* 基础字体大小，适配中文新闻阅读 */
+  font-size: 1.4rem;
+  /* 行高优化：中文阅读最佳行高1.6-1.8 */
+  line-height: 1.7;
+  /* 无衬线字体，保证跨平台一致性 */
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* 统一文本颜色，避免浏览器默认灰色差异 */
+  color: #333;
+  /* 背景色统一，适配新闻系统浅色基调 */
+  background-color: #fff;
+  /* 清除默认滚动条样式（可选） */
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+}
+
+/* 3. 文本元素重置：统一标题、段落样式 */
+h1, h2, h3, h4, h5, h6 {
+  /* 清除默认加粗，业务样式中按需设置 */
+  font-weight: normal;
+  /* 统一标题边距，避免浏览器差异 */
+  margin: 0;
+  /* 标题行高优化，适配新闻标题排版 */
+  line-height: 1.3;
+}
+
+p {
+  margin: 0;
+  /* 段落间距在业务样式中通过类名控制，避免默认间距 */
+}
+
+/* 4. 列表元素重置：清除默认列表样式 */
+ul, ol, li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* 5. 链接元素重置：统一链接样式，适配新闻链接交互 */
+a {
+  /* 清除默认下划线 */
+  text-decoration: none;
+  /* 继承父级文本颜色，避免默认蓝色 */
+  color: inherit;
+  /* 点击高亮清除（移动端） */
+  -webkit-tap-highlight-color: transparent;
+  /* 过渡效果，适配新闻链接hover动效 */
+  transition: color 0.2s ease;
+}
+
+/* 6. 表单元素重置：统一表单样式，适配新闻搜索/筛选表单 */
+input, button, select, textarea {
+  /* 清除默认边框和背景 */
+  border: none;
+  outline: none;
+  background: none;
+  /* 继承字体样式，避免表单字体不一致 */
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  /* 清除默认外观（如Safari下拉框样式） */
+  -webkit-appearance: none;
+  appearance: none;
+  /* 光标样式 */
+  cursor: pointer;
+}
+
+/* 清除输入框默认内边距和边框 */
+input[type="text"],
+input[type="search"],
+input[type="date"],
+textarea {
+  cursor: text;
+  /* 统一输入框内边距基础值 */
+  padding: 0.4rem 0.8rem;
+}
+
+/* 按钮焦点样式优化 */
+button:focus,
+input:focus {
+  outline: none;
+  /* 自定义焦点样式，提升可访问性 */
+  box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
+}
+
+/* 7. 表格元素重置：适配新闻数据表格展示 */
+table {
+  /* 边框合并，适配数据表格 */
+  border-collapse: collapse;
+  border-spacing: 0;
+  /* 宽度100%，适配响应式 */
+  width: 100%;
+}
+
+th, td {
+  padding: 0;
+  text-align: left;
+}
+
+/* 8. 媒体元素重置：适配新闻图片/视频展示 */
+img, video, audio {
+  /* 响应式基础：不超出容器 */
+  max-width: 100%;
+  /* 高度自适应，避免变形 */
+  height: auto;
+  /* 块级展示，便于布局 */
+  display: block;
+  /* 清除图片底部默认空白 */
+  vertical-align: middle;
+}
+
+/* 9. 特殊元素重置 */
+/* 清除hr默认样式 */
+hr {
+  border: none;
+  border-top: 1px solid #e9ecef;
+  margin: 1.6rem 0;
+}
+
+/* 清除blockquote默认样式 */
+blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+/* 清除pre默认样式，适配代码展示（如新闻爬虫配置） */
+pre {
+  margin: 0;
+  padding: 0;
+  font-family: "Consolas", "Monaco", monospace;
+}
+
+/* 10. 辅助类：清除浮动（兼容旧版布局） */
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* 11. 隐藏元素：统一隐藏样式 */
+.hidden {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* 12. 禁用元素样式 */
+[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

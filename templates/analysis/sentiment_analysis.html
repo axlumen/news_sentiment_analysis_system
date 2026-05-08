@@ -1,0 +1,578 @@
+{% extends "base.html" %}
+
+{% block title %}情感分析 - 新闻情感分析系统{% endblock %}
+
+{% block custom_css %}
+<style>
+  /* 情感分析页面样式 */
+  .sentiment-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .sentiment-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .sentiment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* 标题栏渐变更柔和，添加轻微阴影 */
+  .sentiment-card .card-header {
+    background: linear-gradient(135deg, #8e9afe 0%, #7c3aed 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sentiment-card .card-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .sentiment-card .card-body {
+    padding: 20px;
+  }
+  
+  .form-group label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  /* 输入框宽度扩展至容器 80%，边框改为浅色聚焦态，placeholder 文字颜色调浅 */
+  .form-group textarea {
+    width: 80%;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    resize: vertical;
+    min-height: 120px;
+    max-height: 180px;
+    margin: 0 auto;
+    display: block;
+  }
+  
+  .form-group textarea::placeholder {
+    color: #9ca3af;
+  }
+  
+  /* 输入框获得焦点时边框高亮 */
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+  
+  /* 分析情感按钮改为渐变背景，添加圆角和阴影，点击时有下沉反馈 */
+  .analyze-btn {
+    background: linear-gradient(135deg, #8e9afe 0%, #7c3aed 100%);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    padding: 12px 30px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    margin: 0 auto;
+    display: block;
+  }
+  
+  .analyze-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  }
+  
+  .analyze-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+  }
+  
+  /* 分析按钮在未输入文本时置灰不可点击 */
+  .analyze-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .result-section {
+    margin-top: 20px;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  /* 结果区卡片和输入区卡片样式统一 */
+  .result-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .result-card .card-header {
+    background: linear-gradient(135deg, #8e9afe 0%, #7c3aed 100%);
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .result-card .card-header h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  
+  .result-card .card-body {
+    padding: 20px;
+  }
+  
+  .input-text {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #8b5cf6;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  
+  /* 结果区的排版更紧凑，标签和内容对齐 */
+  .sentiment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .sentiment-category {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .sentiment-category .label {
+    font-weight: 600;
+    color: #555;
+    min-width: 80px;
+  }
+  
+  .sentiment-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .sentiment-badge.positive {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: #27ae60;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+  }
+  
+  .sentiment-badge.negative {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #c0392b;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+  }
+  
+  .sentiment-badge.neutral {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: #2980b9;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+  }
+  
+  .score-section {
+    margin-top: 8px;
+  }
+  
+  .score-label {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+  }
+  
+  .score-bar-container {
+    background-color: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 12px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 情感得分进度条改为和主题色一致的渐变条 */
+  .score-bar {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+  
+  .score-bar.positive {
+    background: linear-gradient(90deg, #10b981, #34d399);
+  }
+  
+  .score-bar.negative {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+  }
+  
+  .score-bar.neutral {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  }
+  
+  .score-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-top: 5px;
+  }
+  
+  .example-texts {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #8b5cf6;
+  }
+  
+  .example-texts h5 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+  }
+  
+  /* 示例文本标签水平排列，间距均匀，在小屏时自动换行 */
+  .example-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+  
+  /* 示例文本标签改为圆角胶囊样式，hover 时背景变色 */
+  .example-btn {
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .example-btn:hover {
+    background-color: #f3e8ff;
+    border-color: #8b5cf6;
+    color: #7c3aed;
+  }
+  
+  /* 结果加载时显示 loading 动画 */
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+  }
+  
+  /* 隐藏类 */
+  .hidden {
+    display: none !important;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* 响应式设计 */
+  @media (max-width: 768px) {
+    .sentiment-container {
+      padding: 0 15px;
+    }
+    
+    .sentiment-card .card-body {
+      padding: 15px;
+    }
+    
+    .result-card .card-body {
+      padding: 15px;
+    }
+    
+    .form-group textarea {
+      width: 100%;
+      min-height: 100px;
+      max-height: 150px;
+    }
+    
+    .example-texts {
+      margin-top: 12px;
+      padding: 10px;
+    }
+    
+    .result-section {
+      margin-top: 15px;
+    }
+    
+    .example-buttons {
+      gap: 8px;
+    }
+    
+    .example-btn {
+      padding: 5px 12px;
+      font-size: 11px;
+    }
+  }
+  
+  /* 确保在小屏幕上也能在一页中显示 */
+  @media (max-height: 600px) {
+    .sentiment-card .card-body {
+      padding: 12px;
+    }
+    
+    .form-group textarea {
+      min-height: 80px;
+      max-height: 120px;
+    }
+    
+    .example-texts {
+      margin-top: 10px;
+      padding: 8px;
+    }
+    
+    .result-section {
+      margin-top: 12px;
+    }
+    
+    .result-card .card-body {
+      padding: 12px;
+    }
+  }
+  
+  /* 优化整体页面高度 */
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .content-wrapper {
+    flex: 1;
+    padding: 20px 0;
+  }
+  
+  .sentiment-container {
+    margin-bottom: 20px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sentiment-container">
+  <div class="sentiment-card">
+    <div class="card-header">
+      <h2>文本情感分析</h2>
+    </div>
+    <div class="card-body">
+      <form id="sentimentForm">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="textInput">输入要分析的文本</label>
+          <textarea id="textInput" rows="6" placeholder="请输入要分析情感的文本..."></textarea>
+        </div>
+        
+        <!-- 示例文本按钮 -->
+        <div class="example-texts">
+          <h5>示例文本</h5>
+          <div class="example-buttons">
+            <button type="button" class="example-btn" data-text="今日A股三大指数集体上涨，新能源板块领涨，市场情绪积极。">股市上涨</button>
+            <button type="button" class="example-btn" data-text="公司公布了季度财报，业绩大幅低于预期，股价应声下跌。">业绩不佳</button>
+            <button type="button" class="example-btn" data-text="今天天气晴朗，适合外出游玩，心情非常愉快。">天气晴朗</button>
+            <button type="button" class="example-btn" data-text="交通拥堵严重，上班迟到了，心情很糟糕。">交通拥堵</button>
+          </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+          <button type="button" id="analyzeBtn" class="analyze-btn">
+            分析情感
+          </button>
+        </div>
+      </form>
+      
+      <div id="result" class="result-section hidden">
+        <div class="result-card">
+          <div class="card-header">
+            <h4>分析结果</h4>
+          </div>
+          <div class="card-body">
+            <div class="input-text" id="inputText"></div>
+            <div class="sentiment-info">
+              <div class="sentiment-category">
+                <span class="label">情感类别</span>
+                <span id="sentimentResult" class="sentiment-badge">
+                  <span class="sentiment-text"></span>
+                </span>
+              </div>
+              <div class="score-section">
+                <div class="score-label">情感得分</div>
+                <div class="score-bar-container">
+                  <div id="scoreBar" class="score-bar"></div>
+                </div>
+                <div id="scoreResult" class="score-value"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+  <script>
+    $(document).ready(function() {
+      // 检查输入框内容，控制按钮状态
+      function checkInput() {
+        const text = $('#textInput').val().trim();
+        const analyzeBtn = $('#analyzeBtn');
+        if (text) {
+          analyzeBtn.prop('disabled', false);
+        } else {
+          analyzeBtn.prop('disabled', true);
+        }
+      }
+
+      // 初始检查
+      checkInput();
+
+      // 输入框内容变化时检查
+      $('#textInput').on('input', checkInput);
+
+      // 示例文本按钮点击事件 - 点击后自动填充到输入框
+      $('.example-btn').click(function() {
+        const text = $(this).data('text');
+        $('#textInput').val(text);
+        // 检查输入，更新按钮状态
+        checkInput();
+      });
+      
+      $('#analyzeBtn').click(function() {
+        var text = $('#textInput').val().trim();
+        if (!text) {
+          // 显示极简风格的错误提示
+          const errorDiv = $('<div style="background: #ffebee; border-left: 3px solid #f44336; padding: 12px; margin-top: 16px; border-radius: 4px; font-size: 14px; color: #c62828;">' +
+            '请输入要分析的文本' +
+            '</div>');
+          $('#sentimentForm').after(errorDiv);
+          setTimeout(function() {
+            errorDiv.remove();
+          }, 3000);
+          return;
+        }
+
+        const analyzeBtn = $(this);
+        const originalText = analyzeBtn.text();
+
+        // 添加加载状态 - 显示极简 loading 动画
+        analyzeBtn.prop('disabled', true);
+        analyzeBtn.html('<div class="loading-spinner"></div>分析中');
+
+        // 获取CSRF token
+        const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+        
+        $.ajax({
+          url: '{% url "app:analyze_text" %}',
+          type: 'POST',
+          contentType: 'application/json',
+          headers: {
+            'X-CSRFToken': csrfToken
+          },
+          data: JSON.stringify({text: text}),
+          success: function(data) {
+            $('#inputText').text(text);
+            
+            // 设置情感类别
+            const sentimentMap = {
+              'positive': { text: '正面', class: 'positive' },
+              'negative': { text: '负面', class: 'negative' },
+              'neutral': { text: '中性', class: 'neutral' }
+            };
+            
+            const sentimentInfo = sentimentMap[data.sentiment] || sentimentMap.neutral;
+            
+            // 更新情感标签
+            const sentimentResult = $('#sentimentResult');
+            sentimentResult.removeClass('positive negative neutral').addClass(sentimentInfo.class);
+            sentimentResult.find('.sentiment-text').text(sentimentInfo.text);
+            
+            // 设置情感得分
+            const scorePercentage = (data.score * 100).toFixed(2);
+            $('#scoreResult').text(scorePercentage + '%');
+            
+            // 设置得分进度条
+            const scoreBar = $('#scoreBar');
+            scoreBar.removeClass('positive negative neutral').addClass(sentimentInfo.class);
+            scoreBar.css('width', scorePercentage + '%');
+
+            $('#result').removeClass('hidden');
+
+            // 恢复按钮状态
+            analyzeBtn.prop('disabled', false);
+            analyzeBtn.text(originalText);
+          },
+          error: function(xhr, status, error) {
+            // 显示极简风格的错误提示
+            let errorMessage = '分析失败，请稍后重试';
+            if (xhr.status === 401) {
+              errorMessage = '未授权，请先登录';
+            } else if (xhr.status === 400) {
+              errorMessage = '请求参数错误，请检查输入';
+            } else if (xhr.status === 500) {
+              errorMessage = '服务器内部错误，请稍后重试';
+            }
+
+            // 创建错误提示元素
+            const errorDiv = $('<div style="background: #ffebee; border-left: 3px solid #f44336; padding: 12px; margin-top: 16px; border-radius: 4px; font-size: 14px; color: #c62828;">' +
+              errorMessage +
+              '</div>');
+
+            // 添加到页面
+            $('#sentimentForm').after(errorDiv);
+
+            // 3秒后自动消失
+            setTimeout(function() {
+              errorDiv.remove();
+            }, 3000);
+
+            // 恢复按钮状态
+            analyzeBtn.prop('disabled', false);
+            analyzeBtn.text(originalText);
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}
