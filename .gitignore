@@ -1,49 +1,31 @@
-# Virtual environment
-.venv/
-env/
-venv/
-
-# IDE settings
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.Python
 
-# Django
-*.log
-local_settings.py
-db.sqlite3
-
-# Data and model files
-data/.pytest_cache/
-model/dataset/processed/
-model/dataset/figures/
-model/dataset/reports/
-model/checkpoints/
-
-# Media files
-media/avatars/
-media/static/img/
-
-# OS files
 .DS_Store
 Thumbs.db
 
-# Environment variables
+.idea/
+.vscode/
+.trae/
+
+media/avatars/
+*.png
+*.jpg
+*.webp
+*.svg
+
+model/checkpoints/
+model/dataset/processed/
+model/dataset/reports/
+
 .env
-.env.local
+*.env
+local_settings.py
 
-# TensorFlow/PyTorch
-*.h5
-*.pt
-*.pth
+db.sqlite3
 
-# Git
-.git/
+*.log
+celerybeat-schedule
