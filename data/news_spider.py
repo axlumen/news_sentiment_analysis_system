@@ -1,3 +1,4 @@
+import logging
 import re
 import time
 import random
@@ -8,6 +9,9 @@ from parsel import Selector
 from fake_useragent import UserAgent
 from dotenv import load_dotenv
 from config import Config
+from utils.text_cleaner import TextCleaner
+
+logger = logging.getLogger(__name__)
 
 # 加载环境变量
 load_dotenv()
@@ -38,12 +42,13 @@ HEADERS = {
 # 爬虫控制
 DELAY = (2, 4)
 MAX_RETRY = 3
-MAX_TOTAL_NEWS = 200  # 总爬取上限
+MAX_TOTAL_NEWS = 20  # 总爬取上限
 MAX_CATEGORY_NEWS = 10  # 单分类上限
 
 # -------------------------- MySQL --------------------------
 class NewsMySQL:
     def __init__(self):
+        self.config = MYSQL_CONFIG
         self.conn = None
         self.cursor = None
         self.connect()
@@ -98,8 +103,8 @@ class NewsMySQL:
             print(f"❌ 入库失败：{e}")
             return False
 
-# -------------------------- 清洗工具 --------------------------
-class TextCleaner:
+# TextCleaner imported from utils.text_cleaner
+class _TextCleanerLegacy:
     @staticmethod
     def clean_text(text):
         if not text: return ""

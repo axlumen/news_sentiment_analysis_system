@@ -1,0 +1,957 @@
+{% extends "base.html" %}
+
+{% block title %}数据更新 - 新闻情感分析系统{% endblock %}
+
+{% block custom_css %}
+<style>
+  .data-update-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .update-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .update-card .card-header {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .update-card .card-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .update-card .card-body {
+    padding: 25px;
+  }
+
+  .process-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 0 20px;
+  }
+
+  .step-item {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    width: calc(100% - 20px);
+    height: 3px;
+    background-color: #e5e7eb;
+    z-index: 0;
+  }
+
+  .step-item.active:not(:last-child)::after {
+    background: linear-gradient(90deg, #11998e, #38ef7d);
+  }
+
+  .step-item.selected:not(:last-child)::after {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+  }
+
+  .step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 auto 10px;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+  }
+
+  .step-item.active .step-circle {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+  }
+
+  .step-item.completed .step-circle {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+  }
+
+  .step-item.selected .step-circle {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .step-item.completed:not(:last-child)::after {
+    background: linear-gradient(90deg, #28a745, #20c997);
+  }
+
+  .step-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .step-desc {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+  }
+
+  .step-checkbox {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    z-index: 2;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .step-item.selected::before {
+    content: '\f00c';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  }
+
+  .action-section {
+    text-align: center;
+    padding: 20px;
+  }
+
+  .action-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    padding: 14px 40px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+  }
+
+  .action-btn:active {
+    transform: translateY(0);
+  }
+
+  .action-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .action-btn.secondary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+
+  .action-btn.secondary:hover {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .action-btn.danger {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+  }
+
+  .action-btn.danger:hover {
+    box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .status-section {
+    margin-top: 30px;
+  }
+
+  .status-card {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-left: 4px solid #11998e;
+  }
+
+  .status-card.processing {
+    border-left-color: #ffc107;
+  }
+
+  .status-card.success {
+    border-left-color: #28a745;
+  }
+
+  .status-card.error {
+    border-left-color: #dc3545;
+  }
+
+  .status-card.selected {
+    border-left-color: #667eea;
+  }
+
+  .status-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .status-icon {
+    font-size: 20px;
+  }
+
+  .status-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+  }
+
+  .status-message {
+    font-size: 13px;
+    color: #666;
+    margin-left: 32px;
+    line-height: 1.5;
+  }
+
+  .status-message.success {
+    color: #28a745;
+  }
+
+  .status-message.error {
+    color: #dc3545;
+  }
+
+  .status-message.processing {
+    color: #ffc107;
+  }
+
+  .log-section {
+    background-color: #1a1a2e;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #e0e0e0;
+  }
+
+  .log-section h4 {
+    color: #fff;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .log-content {
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.5;
+  }
+
+  .log-content .success-line {
+    color: #4caf50;
+  }
+
+  .log-content .error-line {
+    color: #f44336;
+  }
+
+  .log-content .info-line {
+    color: #2196f3;
+  }
+
+  .progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 15px 0;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #11998e, #38ef7d);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  .progress-text {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 25px;
+  }
+
+  .stat-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #11998e;
+    margin-bottom: 5px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: #666;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+  }
+
+  .modal-content {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: modalFadeIn 0.3s ease;
+  }
+
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .modal-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #fff3cd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 28px;
+    color: #856404;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+  }
+
+  .modal-body {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: left;
+    margin-bottom: 20px;
+  }
+
+  .modal-body ul {
+    padding-left: 20px;
+  }
+
+  .selected-steps-list {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+  }
+
+  .selected-steps-list h5 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .selected-steps-list .step-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin: 4px;
+  }
+
+  .modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .modal-btn {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .modal-btn.confirm {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: white;
+  }
+
+  .modal-btn.cancel {
+    background-color: #e5e7eb;
+    color: #666;
+  }
+
+  .modal-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .select-all-section {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .select-all-btn {
+    background: none;
+    border: 1px solid #11998e;
+    color: #11998e;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .select-all-btn:hover {
+    background-color: #11998e;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .process-steps {
+      flex-wrap: wrap;
+    }
+    
+    .step-item {
+      width: 48%;
+      margin-bottom: 15px;
+    }
+    
+    .step-item:not(:last-child)::after {
+      display: none;
+    }
+    
+    .btn-group {
+      flex-direction: column;
+    }
+    
+    .action-btn {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="data-update-container">
+  <div class="update-card">
+    <div class="card-header">
+      <h2><i class="fas fa-sync-alt mr-2"></i>数据更新管理</h2>
+    </div>
+    <div class="card-body">
+      <div class="select-all-section">
+        <button id="selectAllBtn" class="select-all-btn">
+          <i class="fas fa-check-square mr-1"></i>全选/取消全选
+        </button>
+      </div>
+
+      <div class="process-steps">
+        <div class="step-item" data-step="spider">
+          <input type="checkbox" class="step-checkbox" id="stepCb1" value="spider">
+          <div class="step-circle">1</div>
+          <div class="step-title">新闻爬取</div>
+          <div class="step-desc">爬取最新新闻数据</div>
+        </div>
+        <div class="step-item" data-step="clean">
+          <input type="checkbox" class="step-checkbox" id="stepCb2" value="clean">
+          <div class="step-circle">2</div>
+          <div class="step-title">数据清洗</div>
+          <div class="step-desc">清洗和预处理数据</div>
+        </div>
+        <div class="step-item" data-step="analysis">
+          <input type="checkbox" class="step-checkbox" id="stepCb3" value="analysis">
+          <div class="step-circle">3</div>
+          <div class="step-title">情感分析</div>
+          <div class="step-desc">执行情感预测分析</div>
+        </div>
+        <div class="step-item" data-step="statistics">
+          <input type="checkbox" class="step-checkbox" id="stepCb4" value="statistics">
+          <div class="step-circle">4</div>
+          <div class="step-title">统计更新</div>
+          <div class="step-desc">更新统计数据</div>
+        </div>
+      </div>
+
+      <div class="action-section">
+        <div class="btn-group">
+          <button id="runFullPipeline" class="action-btn">
+            <i class="fas fa-play"></i>
+            <span>执行完整流程</span>
+          </button>
+          <button id="runSelectedSteps" class="action-btn secondary">
+            <i class="fas fa-list-check"></i>
+            <span>执行选中步骤</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="progressSection" class="hidden">
+        <div class="progress-bar-container">
+          <div id="progressBar" class="progress-bar" style="width: 0%;"></div>
+        </div>
+        <div class="progress-text" id="progressText">准备就绪</div>
+      </div>
+
+      <div id="statusSection" class="status-section hidden">
+        <div id="status1" class="status-card" data-step="spider">
+          <div class="status-header">
+            <i class="fas fa-download status-icon"></i>
+            <span class="status-title">新闻爬取</span>
+          </div>
+          <div class="status-message" id="statusMsg1">等待开始...</div>
+        </div>
+        <div id="status2" class="status-card" data-step="clean">
+          <div class="status-header">
+            <i class="fas fa-filter status-icon"></i>
+            <span class="status-title">数据清洗</span>
+          </div>
+          <div class="status-message" id="statusMsg2">等待开始...</div>
+        </div>
+        <div id="status3" class="status-card" data-step="analysis">
+          <div class="status-header">
+            <i class="fas fa-brain status-icon"></i>
+            <span class="status-title">情感分析</span>
+          </div>
+          <div class="status-message" id="statusMsg3">等待开始...</div>
+        </div>
+        <div id="status4" class="status-card" data-step="statistics">
+          <div class="status-header">
+            <i class="fas fa-chart-bar status-icon"></i>
+            <span class="status-title">统计更新</span>
+          </div>
+          <div class="status-message" id="statusMsg4">等待开始...</div>
+        </div>
+      </div>
+
+      <div id="logSection" class="log-section hidden">
+        <h4><i class="fas fa-terminal mr-2"></i>执行日志</h4>
+        <div id="logContent" class="log-content"></div>
+      </div>
+
+      <div id="statsSection" class="stats-grid hidden">
+        <div class="stat-card">
+          <div class="stat-value" id="statNews">0</div>
+          <div class="stat-label">新增新闻</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statPositive">0</div>
+          <div class="stat-label">正面新闻</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statNeutral">0</div>
+          <div class="stat-label">中性新闻</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statNegative">0</div>
+          <div class="stat-label">负面新闻</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="confirmModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h3>确认执行数据更新</h3>
+    </div>
+    <div class="modal-body">
+      <p>即将执行以下步骤：</p>
+      <div class="selected-steps-list" id="selectedStepsList">
+        <h5>选中的步骤：</h5>
+      </div>
+      <p style="margin-top: 15px; color: #666;">执行过程可能需要几分钟时间，请耐心等待...</p>
+    </div>
+    <div class="modal-footer">
+      <button id="confirmCancel" class="modal-btn cancel">取消</button>
+      <button id="confirmRun" class="modal-btn confirm">确认执行</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+  $(document).ready(function() {
+    const confirmModal = $('#confirmModal');
+    const runFullPipeline = $('#runFullPipeline');
+    const runSelectedSteps = $('#runSelectedSteps');
+    const selectAllBtn = $('#selectAllBtn');
+    const stepItems = $('.step-item');
+    const stepCheckboxes = $('.step-checkbox');
+
+    // 步骤配置：key -> { index, name, statusId, msgId }
+    const stepConfig = {
+      'spider':    { index: 1, name: '新闻爬取', statusId: 'status1', msgId: 'statusMsg1' },
+      'clean':     { index: 2, name: '数据清洗', statusId: 'status2', msgId: 'statusMsg2' },
+      'analysis':  { index: 3, name: '情感分析', statusId: 'status3', msgId: 'statusMsg3' },
+      'statistics': { index: 4, name: '统计更新', statusId: 'status4', msgId: 'statusMsg4' }
+    };
+    const stepsOrder = ['spider', 'clean', 'analysis', 'statistics'];
+
+    // 获取 CSRF token
+    function getCsrfToken() {
+      return $('input[name="csrfmiddlewaretoken"]').val() ||
+             document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+    }
+
+    let selectedSteps = [];
+
+    stepItems.click(function(e) {
+      if (!$(e.target).hasClass('step-checkbox')) {
+        const checkbox = $(this).find('.step-checkbox');
+        checkbox.prop('checked', !checkbox.prop('checked'));
+        updateSelection();
+      }
+    });
+
+    stepCheckboxes.change(function() {
+      updateSelection();
+    });
+
+    selectAllBtn.click(function() {
+      const allChecked = stepCheckboxes.length === stepCheckboxes.filter(':checked').length;
+      stepCheckboxes.prop('checked', !allChecked);
+      updateSelection();
+    });
+
+    function updateSelection() {
+      selectedSteps = stepCheckboxes.filter(':checked').map(function() {
+        return $(this).val();
+      }).get();
+
+      stepItems.each(function() {
+        const step = $(this).data('step');
+        $(this).toggleClass('selected', selectedSteps.includes(step));
+      });
+
+      $('.status-card').each(function() {
+        const step = $(this).data('step');
+        $(this).toggleClass('selected', selectedSteps.includes(step));
+      });
+    }
+
+    runFullPipeline.click(function() {
+      stepCheckboxes.prop('checked', true);
+      updateSelection();
+      showConfirmModal();
+    });
+
+    runSelectedSteps.click(function() {
+      if (selectedSteps.length === 0) {
+        alert('请至少选择一个步骤');
+        return;
+      }
+      showConfirmModal();
+    });
+
+    function showConfirmModal() {
+      const listContainer = $('#selectedStepsList');
+      listContainer.find('.step-tag').remove();
+
+      selectedSteps.forEach(function(step) {
+        const name = stepConfig[step]?.name || step;
+        listContainer.append(`<span class="step-tag">${name}</span>`);
+      });
+
+      confirmModal.addClass('show');
+    }
+
+    $('#confirmCancel').click(function() {
+      confirmModal.removeClass('show');
+    });
+
+    $('#confirmRun').click(function() {
+      confirmModal.removeClass('show');
+      executeSelectedSteps();
+    });
+
+    function executeSelectedSteps() {
+      runFullPipeline.prop('disabled', true);
+      runSelectedSteps.prop('disabled', true);
+
+      $('#progressSection').removeClass('hidden');
+      $('#statusSection').removeClass('hidden');
+      $('#logSection').removeClass('hidden');
+
+      resetStatus();
+
+      // 标记选中步骤为处理中
+      selectedSteps.forEach(function(step) {
+        const cfg = stepConfig[step];
+        if (cfg) {
+          $(`.step-item[data-step="${step}"] .step-circle`).css('background', 'linear-gradient(135deg, #ffc107, #ffca2c)');
+          $('#' + cfg.statusId).addClass('processing');
+          $('#' + cfg.msgId).text('执行中...').addClass('processing');
+        }
+      });
+
+      addLog('info', '开始执行选中的步骤...');
+
+      $.ajax({
+        url: '{% url "app:api_run_selected_steps" %}',
+        type: 'POST',
+        contentType: 'application/json',
+        headers: { 'X-CSRFToken': getCsrfToken() },
+        data: JSON.stringify({ steps: selectedSteps }),
+        success: function(data) {
+          if (data.success) {
+            // 根据服务器返回的 results 更新每个步骤状态
+            if (data.results && data.results.length > 0) {
+              let completedCount = 0;
+              data.results.forEach(function(result) {
+                const stepName = result[0];
+                const success = result[1];
+                // 找到对应的 step key
+                const stepKey = stepsOrder.find(function(k) {
+                  return stepConfig[k].name === stepName;
+                });
+                if (stepKey) {
+                  const cfg = stepConfig[stepKey];
+                  if (success) {
+                    completedCount++;
+                    markStepCompleted(stepKey);
+                    $('#' + cfg.msgId).text(cfg.name + '完成').removeClass('processing error').addClass('success');
+                    addLog('success', `步骤${cfg.index}: ${cfg.name}完成`);
+                  } else {
+                    markStepError(stepKey);
+                    $('#' + cfg.msgId).text(cfg.name + '失败').removeClass('processing success').addClass('error');
+                    addLog('error', `步骤${cfg.index}: ${cfg.name}失败`);
+                  }
+                }
+              });
+
+              const progress = (completedCount / selectedSteps.length) * 100;
+              $('#progressBar').css('width', progress + '%');
+            } else {
+              // 无详细结果时，全部标记完成
+              selectedSteps.forEach(function(step) {
+                markStepCompleted(step);
+                const cfg = stepConfig[step];
+                $('#' + cfg.msgId).text(cfg.name + '完成').removeClass('processing error').addClass('success');
+              });
+              $('#progressBar').css('width', '100%');
+            }
+
+            $('#progressText').text('执行完成');
+            addLog('success', '===== 数据更新完成 =====');
+
+            if (data.log) {
+              addLog('info', '--- 执行日志详情 ---');
+              // 将日志按行拆分，逐行添加
+              data.log.split('\n').forEach(function(line) {
+                if (line.trim()) {
+                  addLog('info', line);
+                }
+              });
+            }
+
+            fetchStats();
+          } else {
+            handleError(data.message || '执行失败');
+          }
+        },
+        error: function(xhr, status, error) {
+          let msg = '请求失败: ' + error;
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            msg = xhr.responseJSON.message;
+          }
+          handleError(msg);
+        },
+        complete: function() {
+          runFullPipeline.prop('disabled', false);
+          runSelectedSteps.prop('disabled', false);
+        }
+      });
+    }
+
+    function markStepCompleted(stepKey) {
+      $(`.step-item[data-step="${stepKey}"]`).addClass('completed').removeClass('selected');
+      $(`.step-item[data-step="${stepKey}"] .step-circle`).css('background', '');
+    }
+
+    function markStepError(stepKey) {
+      $(`.step-item[data-step="${stepKey}"] .step-circle`).css('background', 'linear-gradient(135deg, #dc3545, #e74c3c)');
+    }
+
+    function resetStatus() {
+      stepsOrder.forEach(function(step) {
+        const cfg = stepConfig[step];
+        $(`.step-item[data-step="${step}"]`).removeClass('active completed');
+        $(`.step-item[data-step="${step}"] .step-circle`).css('background', '');
+        $('#' + cfg.statusId).removeClass('processing success error');
+        $('#' + cfg.msgId).removeClass('processing success error').text('等待开始...');
+      });
+      $('#progressBar').css('width', '0%');
+      $('#progressText').text('准备就绪');
+      $('#logContent').empty();
+      $('#statsSection').addClass('hidden');
+    }
+
+    function addLog(type, message) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('zh-CN');
+      const typeClass = type + '-line';
+      const line = `<span class="${typeClass}">[${timeStr}] ${message}</span>\n`;
+      $('#logContent').append(line);
+      const logSection = $('#logSection');
+      logSection.scrollTop(logSection[0].scrollHeight);
+    }
+
+    function handleError(message) {
+      addLog('error', '执行失败: ' + message);
+      $('#progressText').text('执行失败');
+    }
+
+    function fetchStats() {
+      $.ajax({
+        url: '{% url "app:api_overall_sentiment" %}',
+        type: 'GET',
+        success: function(data) {
+          $('#statNews').text(data.total_news || 0);
+          $('#statPositive').text(data.positive_count || 0);
+          $('#statNeutral').text(data.neutral_count || 0);
+          $('#statNegative').text(data.negative_count || 0);
+          $('#statsSection').removeClass('hidden');
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}
