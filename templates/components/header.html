@@ -15,14 +15,6 @@
     </button>
   </form>
 
-  <!-- 数据爬取按钮 -->
-  <div class="crawl-area">
-    <button id="crawlBtn" class="crawl-btn" onclick="startCrawl()">
-      <i class="fas fa-sync-alt"></i>
-      <span>数据爬取</span>
-    </button>
-  </div>
-
   <!-- 用户入口 -->
   <div class="user-area">
     {% if user.is_authenticated %}
@@ -130,52 +122,10 @@
     cursor: pointer;
   }
 
-  /* 数据爬取区域 */
-  .crawl-area {
-    margin-left: auto;
-    margin-right: 15px;
-  }
-  .crawl-btn {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-  }
-  .crawl-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-  }
-  .crawl-btn:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-  .crawl-btn.loading {
-    animation: pulse 1.5s infinite;
-  }
-  .crawl-btn.loading i {
-    animation: spin 1s linear infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-  }
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
   /* 用户区域 */
   .user-area {
+    margin-left: auto;
+    margin-right: 15px;
     display: flex;
     align-items: center;
     gap: 15px;
@@ -308,51 +258,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-
-// 数据爬取功能
-function startCrawl() {
-  const btn = document.getElementById('crawlBtn');
-  if (btn.disabled) return;
-  
-  // 确认是否开始
-  if (!confirm('确定要开始数据爬取吗？\n\n这将执行以下流程：\n1. 爬取新闻数据\n2. 数据预处理\n3. 情感分析预测\n4. 统计分析\n\n整个过程可能需要几分钟时间。')) {
-    return;
-  }
-  
-  // 设置按钮状态
-  btn.disabled = true;
-  btn.classList.add('loading');
-  btn.innerHTML = '<i class="fas fa-spinner"></i><span>爬取中...</span>';
-  
-  // 发送请求
-  fetch('/api/run_pipeline/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCookie('csrftoken')
-    }
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert('数据爬取完成！\n\n' + data.message);
-      // 刷新页面显示新数据
-      window.location.reload();
-    } else {
-      alert('数据爬取失败：' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('数据爬取出错：' + error.message);
-  })
-  .finally(() => {
-    // 恢复按钮状态
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.innerHTML = '<i class="fas fa-sync-alt"></i><span>数据爬取</span>';
-  });
-}
 
 // 获取CSRF Token
 function getCookie(name) {

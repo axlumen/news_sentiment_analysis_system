@@ -1,31 +1,45 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
-*.pyd
-.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
 
+# Django
+*.sqlite3
+db.sqlite3
+media/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+
+# Logs
+logs/
+
+# Model checkpoints and datasets (large files)
+model/checkpoints/
+model/dataset/processed/
+model/dataset/figures/
+model/dataset/reports/
+
+# Data outputs
+data/news_cleaned_*.csv
+data/news_sentiment_pred_*.csv
+
+# OS
 .DS_Store
 Thumbs.db
 
-.idea/
-.vscode/
+# Trae
 .trae/
-
-media/avatars/
-*.png
-*.jpg
-*.webp
-*.svg
-
-model/checkpoints/
-model/dataset/processed/
-model/dataset/reports/
-
-.env
-*.env
-local_settings.py
-
-db.sqlite3
-
-*.log
-celerybeat-schedule

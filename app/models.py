@@ -26,6 +26,7 @@ class NewsRaw(models.Model):
             models.Index(fields=['source']),
             models.Index(fields=['publish_date']),
             models.Index(fields=['category']),
+            models.Index(fields=['create_time']),
         ]
 
 class NewsSentimentAnalysis(models.Model):
@@ -69,6 +70,8 @@ class NewsSentimentAnalysis(models.Model):
             models.Index(fields=['source']),
             models.Index(fields=['publish_date']),
             models.Index(fields=['category']),
+            models.Index(fields=['sentiment']),
+            models.Index(fields=['create_time']),
         ]
 
 

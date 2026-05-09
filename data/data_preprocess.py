@@ -1,3 +1,5 @@
+import logging
+import os
 import re
 from datetime import datetime
 from difflib import SequenceMatcher
@@ -5,9 +7,11 @@ from difflib import SequenceMatcher
 import jieba
 import pandas as pd
 from dotenv import load_dotenv
-from sqlalchemy import create_engine  # 新增：导入SQLAlchemy
+from sqlalchemy import create_engine, text
 
 from config import Config
+
+logger = logging.getLogger(__name__)
 
 # -------------------------- 1. 配置加载与工具函数 --------------------------
 # 加载环境变量
@@ -28,22 +32,12 @@ MYSQL_CONFIG = {
 def create_mysql_engine():
     """创建SQLAlchemy MySQL引擎"""
     conn_str = f"mysql+pymysql://{MYSQL_CONFIG['user']}:{MYSQL_CONFIG['password']}@{MYSQL_CONFIG['host']}:{MYSQL_CONFIG['port']}/{MYSQL_CONFIG['database']}?charset={MYSQL_CONFIG['charset']}"
-    engine = create_engine(conn_str)
+    engine = create_engine(conn_str, pool_size=10, max_overflow=20, pool_recycle=3600)
     return engine
 
 
 # 加载停用词表
-def load_stopwords(file_path="stopwords.txt"):
-    """加载中文停用词表"""
-    try:
-        with open(file_path, "r", encoding="utf8") as f:
-            stopwords = set([line.strip() for line in f.readlines() if line.strip()])
-        print(f"成功加载停用词表，共{len(stopwords)}个停用词")
-        return stopwords
-    except FileNotFoundError:
-        print("停用词文件不存在，使用默认停用词")
-        return {"的", "了", "在", "是", "我", "你", "他", "她", "它", "们", "就", "都", "而", "及", "与"}
-
+from utils.text_utils import load_stopwords
 
 STOPWORDS = load_stopwords()
 
@@ -274,91 +268,95 @@ def standardize_text(df, max_token_len=512):
 
 # -------------------------- 6. 清洗后数据落库/保存 --------------------------
 def save_cleaned_data(df):
-    """保存清洗后的数据：MySQL + CSV"""
-    print("\n===== 保存清洗后的数据 =====")
+    """保存清洗后的数据：MySQL + CSV（批量插入优化）"""
+    logger.info("Saving cleaned data...")
 
-    # 显式创建副本
     df = df.copy()
 
-    # 1. 保存为CSV（方便模型训练直接读取）
+    # 1. 保存为CSV
     output_cols = [
         "id", "title_clean", "content_clean", "title_standard", "content_standard",
         "source", "category", "publish_date", "url",
         "read_count", "comment_count", "like_count",
         "title_len", "content_len", "content_token_len"
     ]
-    csv_path = f"news_cleaned_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    data_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(data_dir, f"news_cleaned_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
     df[output_cols].to_csv(csv_path, index=False, encoding="utf8")
-    print(f"1. CSV文件保存成功：{csv_path}")
+    logger.info(f"CSV saved: {csv_path}")
 
-    # 2. 写入到NewsSentimentAnalysis表（使用SQLAlchemy引擎）
+    # 2. 批量写入到 NewsSentimentAnalysis 表
     try:
         engine = create_mysql_engine()
 
-        # 写入数据到NewsSentimentAnalysis表
-        print(f"2. 写入到 app_newssentimentanalysis 表，共 {len(df)} 条数据...")
+        insert_sql = text("""
+        INSERT INTO app_newssentimentanalysis
+        (title_clean, content_clean, title_standard, content_standard,
+         source, category, publish_date, url,
+         read_count, comment_count, like_count,
+         title_len, content_len, content_token_len, create_time)
+        VALUES (:title_clean, :content_clean, :title_standard, :content_standard,
+         :source, :category, :publish_date, :url,
+         :read_count, :comment_count, :like_count,
+         :title_len, :content_len, :content_token_len, :create_time)
+        ON DUPLICATE KEY UPDATE
+        title_clean = VALUES(title_clean),
+        content_clean = VALUES(content_clean),
+        title_standard = VALUES(title_standard),
+        content_standard = VALUES(content_standard),
+        source = VALUES(source),
+        category = VALUES(category),
+        publish_date = VALUES(publish_date),
+        read_count = VALUES(read_count),
+        comment_count = VALUES(comment_count),
+        like_count = VALUES(like_count),
+        title_len = VALUES(title_len),
+        content_len = VALUES(content_len),
+        content_token_len = VALUES(content_token_len)
+        """)
+
+        # 构建批量参数列表
+        now = datetime.now()
+        rows = []
+        for _, row in df.iterrows():
+            rows.append({
+                'title_clean': row.get('title_clean', ''),
+                'content_clean': row.get('content_clean', ''),
+                'title_standard': row.get('title_standard', ''),
+                'content_standard': row.get('content_standard', ''),
+                'source': row.get('source', ''),
+                'category': row.get('category', ''),
+                'publish_date': row.get('publish_date', None),
+                'url': row.get('url', ''),
+                'read_count': row.get('read_count', 0),
+                'comment_count': row.get('comment_count', 0),
+                'like_count': row.get('like_count', 0),
+                'title_len': row.get('title_len', 0),
+                'content_len': row.get('content_len', 0),
+                'content_token_len': row.get('content_token_len', 0),
+                'create_time': now
+            })
+
+        # 分批执行，每批 500 条
+        batch_size = 500
         success_count = 0
         fail_count = 0
-        
-        for _, row in df.iterrows():
-            try:
-                # 构建插入SQL（使用命名参数）
-                insert_sql = """
-                INSERT INTO app_newssentimentanalysis 
-                (title_clean, content_clean, title_standard, content_standard,
-                 source, category, publish_date, url,
-                 read_count, comment_count, like_count,
-                 title_len, content_len, content_token_len, create_time)
-                VALUES (:title_clean, :content_clean, :title_standard, :content_standard,
-                 :source, :category, :publish_date, :url,
-                 :read_count, :comment_count, :like_count,
-                 :title_len, :content_len, :content_token_len, :create_time)
-                ON DUPLICATE KEY UPDATE
-                title_clean = VALUES(title_clean),
-                content_clean = VALUES(content_clean),
-                title_standard = VALUES(title_standard),
-                content_standard = VALUES(content_standard),
-                source = VALUES(source),
-                category = VALUES(category),
-                publish_date = VALUES(publish_date),
-                read_count = VALUES(read_count),
-                comment_count = VALUES(comment_count),
-                like_count = VALUES(like_count),
-                title_len = VALUES(title_len),
-                content_len = VALUES(content_len),
-                content_token_len = VALUES(content_token_len)
-                """
-                # 执行插入
-                from sqlalchemy import text
-                with engine.connect() as conn:
-                    conn.execute(text(insert_sql), {
-                        'title_clean': row.get('title_clean', ''),
-                        'content_clean': row.get('content_clean', ''),
-                        'title_standard': row.get('title_standard', ''),
-                        'content_standard': row.get('content_standard', ''),
-                        'source': row.get('source', ''),
-                        'category': row.get('category', ''),
-                        'publish_date': row.get('publish_date', None),
-                        'url': row.get('url', ''),
-                        'read_count': row.get('read_count', 0),
-                        'comment_count': row.get('comment_count', 0),
-                        'like_count': row.get('like_count', 0),
-                        'title_len': row.get('title_len', 0),
-                        'content_len': row.get('content_len', 0),
-                        'content_token_len': row.get('content_token_len', 0),
-                        'create_time': datetime.now()
-                    })
+        with engine.connect() as conn:
+            for i in range(0, len(rows), batch_size):
+                batch = rows[i:i + batch_size]
+                try:
+                    conn.execute(insert_sql, batch)
                     conn.commit()
-                success_count += 1
-            except Exception as e:
-                fail_count += 1
-                if fail_count <= 3:  # 只显示前3个错误
-                    print(f"写入记录失败 (URL: {row.get('url')}): {e}")
-        
+                    success_count += len(batch)
+                except Exception as e:
+                    fail_count += len(batch)
+                    logger.error(f"Batch insert failed (rows {i}-{i+len(batch)}): {e}")
+                    conn.rollback()
+
         engine.dispose()
-        print(f"3. 数据写入完成：成功 {success_count} 条，失败 {fail_count} 条")
+        logger.info(f"DB write complete: {success_count} success, {fail_count} failed")
     except Exception as e:
-        print(f"MySQL写入失败：{e}")
+        logger.error(f"MySQL write failed: {e}")
 
     return csv_path
 

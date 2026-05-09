@@ -8,6 +8,7 @@ urlpatterns = [
     path('sentiment/analysis/', views.sentiment_analysis, name='sentiment_analysis'),
     path('hot_search_wordcloud/', views.hot_search_wordcloud, name='hot_search_wordcloud'),  # 词云页面
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('data/update/', views.data_update, name='data_update'),
 
     # ===================== 全量接口（与视图、模板完全匹配） =====================
     path('api/overall_sentiment/', views.api_overall_sentiment, name='api_overall_sentiment'),
@@ -19,4 +20,5 @@ urlpatterns = [
     path('api/news_list/', views.api_news_list, name='api_news_list'),
     path('api/analyze_text/', views.analyze_text, name='analyze_text'),
     path('api/run_pipeline/', views.api_run_pipeline, name='api_run_pipeline'),  # 数据全流程运行
+    path('api/run_selected_steps/', views.api_run_selected_steps, name='api_run_selected_steps'),  # 选择步骤运行
 ]

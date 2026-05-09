@@ -1,12 +1,16 @@
 import json
 import os
+import io
+import sys
+from contextlib import redirect_stdout
+from datetime import datetime
 
+from config import Config
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db import connection
-from django.db.utils import OperationalError
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 
 from data.predict_sentiment import SentimentPredictor
@@ -14,68 +18,116 @@ from .models import CategorySentiment, SourceSentiment, NewsSentimentAnalysis, O
     ScoreDistribution, SentimentKeywords
 
 
-# 工具函数：SQL 转字典
-def dictfetchall(cursor):
-    columns = [col[0] for col in cursor.description]
-    return [dict(zip(columns, row)) for row in cursor.fetchall()]
-
-
-# 整体情感统计
+# 整体情感统计 - 使用缓存
 @csrf_exempt
+@cache_page(Config.cache_timeout)
 def api_overall(request):
     try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM overall_sentiment LIMIT 1")
-            data = dictfetchall(cursor)
-        return JsonResponse(data[0], safe=False)
-    except OperationalError:
-        return JsonResponse({"error": "数据表不存在"}, status=500)
+        data = OverallSentiment.objects.order_by('-id').first()
+        if data:
+            result = {
+                'id': data.id,
+                'total_news': data.total_news,
+                'positive_count': data.positive_count,
+                'neutral_count': data.neutral_count,
+                'negative_count': data.negative_count,
+                'positive_pct': data.positive_pct,
+                'neutral_pct': data.neutral_pct,
+                'negative_pct': data.negative_pct,
+                'avg_sentiment_score': data.avg_sentiment_score,
+                'create_time': data.create_time.isoformat() if data.create_time else None
+            }
+            return JsonResponse(result, safe=False)
+        return JsonResponse({}, safe=False)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
-# 日期情感趋势
+# 日期情感趋势 - 使用缓存
 @csrf_exempt
+@cache_page(Config.cache_timeout)
 def api_date(request):
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM date_sentiment ORDER BY date_str")
-        data = dictfetchall(cursor)
-    return JsonResponse(data, safe=False)
+    try:
+        data = DateSentiment.objects.order_by('date_str')
+        result = [{
+            'id': item.id,
+            'date_str': item.date_str,
+            'total_count': item.total_count,
+            'positive_count': item.positive_count,
+            'neutral_count': item.neutral_count,
+            'negative_count': item.negative_count,
+            'avg_sentiment_score': item.avg_sentiment_score
+        } for item in data]
+        return JsonResponse(result, safe=False)
+    except Exception as e:
+        return JsonResponse([], safe=False)
 
 
-# 分类情感统计
+# 分类情感统计 - 使用缓存和ORM
 @csrf_exempt
+@cache_page(Config.cache_timeout)
 def api_category(request):
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM category_sentiment")
-        data = dictfetchall(cursor)
-    return JsonResponse(data, safe=False)
+    try:
+        data = CategorySentiment.objects.all()[:10]
+        result = [{
+            'id': item.id,
+            'category': item.category,
+            'total_count': item.total_count,
+            'positive_count': item.positive_count,
+            'neutral_count': item.neutral_count,
+            'negative_count': item.negative_count,
+            'avg_sentiment_score': item.avg_sentiment_score
+        } for item in data]
+        return JsonResponse(result, safe=False)
+    except Exception as e:
+        return JsonResponse([], safe=False)
 
 
-# 来源情感统计
+# 来源情感统计 - 使用缓存和ORM
 @csrf_exempt
+@cache_page(Config.cache_timeout)
 def api_source(request):
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM source_sentiment ORDER BY avg_sentiment_score DESC")
-        data = dictfetchall(cursor)
-    return JsonResponse(data, safe=False)
+    try:
+        data = SourceSentiment.objects.order_by('-avg_sentiment_score')[:10]
+        result = [{
+            'id': item.id,
+            'source': item.source,
+            'total_count': item.total_count,
+            'positive_count': item.positive_count,
+            'neutral_count': item.neutral_count,
+            'negative_count': item.negative_count,
+            'avg_sentiment_score': item.avg_sentiment_score
+        } for item in data]
+        return JsonResponse(result, safe=False)
+    except Exception as e:
+        return JsonResponse([], safe=False)
 
 
-# 情感得分分布
+# 情感得分分布 - 使用缓存和ORM
 @csrf_exempt
+@cache_page(Config.cache_timeout)
 def api_score(request):
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM score_distribution")
-        data = dictfetchall(cursor)
-    return JsonResponse(data, safe=False)
+    try:
+        data = ScoreDistribution.objects.all()
+        result = [{
+            'id': item.id,
+            'score_range': item.score_range,
+            'count': item.count
+        } for item in data]
+        return JsonResponse(result, safe=False)
+    except Exception as e:
+        return JsonResponse([], safe=False)
 
 
-# 关键词（词云专用，返回 name + value）
+# 关键词（词云专用，返回 name + value）- 使用缓存
 @csrf_exempt
+@cache_page(Config.cache_timeout)
 def api_keywords(request):
     try:
         data = SentimentKeywords.objects.order_by('-frequency')[:50]
         result = [{"name": item.keyword, "value": item.frequency} for item in data]
         return JsonResponse(result, safe=False)
-    except:
+    except Exception as e:
         return JsonResponse([], safe=False)
 
 
@@ -425,6 +477,14 @@ def dashboard(request):
     return render(request, 'analysis/dashboard.html')
 
 
+@login_required
+def data_update(request):
+    """
+    数据更新页面视图
+    """
+    return render(request, 'analysis/data_update.html')
+
+
 @csrf_exempt
 @login_required
 def api_run_pipeline(request):
@@ -468,6 +528,99 @@ def api_run_pipeline(request):
             'total': 4
         })
         
+    except Exception as e:
+        import traceback
+        error_msg = f"执行出错: {str(e)}\n{traceback.format_exc()}"
+        return JsonResponse({
+            'success': False,
+            'message': f'执行失败: {str(e)}',
+            'log': error_msg
+        }, status=500)
+
+
+@csrf_exempt
+@login_required
+def api_run_selected_steps(request):
+    """
+    运行选中的步骤API
+    支持选择执行：爬虫、数据清洗、情感分析、统计更新
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': '只支持POST请求'}, status=405)
+    
+    try:
+        # 解析请求数据
+        data = json.loads(request.body)
+        steps = data.get('steps', [])
+        
+        if not steps:
+            return JsonResponse({'success': False, 'message': '请至少选择一个步骤'}, status=400)
+
+        # 验证步骤名称合法性
+        valid_steps = {'spider', 'clean', 'analysis', 'statistics'}
+        invalid = set(steps) - valid_steps
+        if invalid:
+            return JsonResponse({'success': False, 'message': f'无效的步骤: {", ".join(invalid)}'}, status=400)
+
+        # 使用 contextlib.redirect_stdout 安全捕获输出
+        output_buffer = io.StringIO()
+        
+        with redirect_stdout(output_buffer):
+            print("=" * 80)
+            print("新闻情感分析系统 - 选择步骤执行")
+            print(f"开始时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"选中步骤: {', '.join(steps)}")
+            print("=" * 80)
+            
+            # 导入步骤函数
+            from data.main import run_spider, run_preprocess, run_predict, run_analysis
+            
+            # 步骤映射
+            step_map = {
+                'spider': ('新闻爬虫', run_spider),
+                'clean': ('数据清洗', run_preprocess),
+                'analysis': ('情感分析', run_predict),
+                'statistics': ('统计更新', run_analysis)
+            }
+            
+            # 按顺序执行选中的步骤
+            step_order = ['spider', 'clean', 'analysis', 'statistics']
+            results = []
+            
+            for step_key in step_order:
+                if step_key in steps:
+                    name, func = step_map[step_key]
+                    print(f"\n{'=' * 60}")
+                    print(f"执行步骤: {name}")
+                    print('=' * 60)
+                    success = func()
+                    results.append((name, success))
+                    if not success:
+                        print(f"警告: {name} 执行失败")
+            
+            # 打印执行摘要
+            print("\n" + "=" * 60)
+            print("执行摘要")
+            print("=" * 60)
+            for name, success in results:
+                status = "[OK] 成功" if success else "[FAIL] 失败"
+                print(f"{name}: {status}")
+            print("=" * 60)
+            print(f"结束时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        output_log = output_buffer.getvalue()
+        output_buffer.close()
+        
+        return JsonResponse({
+            'success': True,
+            'message': '步骤执行完成！',
+            'log': output_log,
+            'steps': steps,
+            'results': results
+        })
+        
+    except json.JSONDecodeError as e:
+        return JsonResponse({'success': False, 'message': f'JSON解析错误: {str(e)}'}, status=400)
     except Exception as e:
         import traceback
         error_msg = f"执行出错: {str(e)}\n{traceback.format_exc()}"

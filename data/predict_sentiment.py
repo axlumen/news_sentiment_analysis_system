@@ -6,7 +6,6 @@ import jieba
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 from tqdm import tqdm
 
 # 初始化Django环境
@@ -36,7 +35,9 @@ def detect_file_encoding(file_path):
         return encoding
 
 
-def get_latest_cleaned_data(file_dir="./", prefix="news_cleaned_", suffix=".csv"):
+def get_latest_cleaned_data(file_dir=None, prefix="news_cleaned_", suffix=".csv"):
+    if file_dir is None:
+        file_dir = _DATA_DIR
     """自动查找最新清洗数据文件"""
     cleaned_files = []
     for file in os.listdir(file_dir):
@@ -89,9 +90,11 @@ def read_csv_safe(file_path):
 
 
 # -------------------------- 2. 核心配置 --------------------------
-MODEL_PATH = "../model/checkpoints/best_model.pth"
-VOCAB_PATH = "../model/dataset/processed/vocab.pkl"
-OUTPUT_PATH = "news_sentiment_pred_latest.csv"
+_DATA_DIR = os.path.dirname(os.path.abspath(__file__))
+_BASE_DIR = os.path.dirname(_DATA_DIR)
+MODEL_PATH = os.path.join(_BASE_DIR, "model", "checkpoints", "best_model.pth")
+VOCAB_PATH = os.path.join(_BASE_DIR, "model", "dataset", "processed", "vocab.pkl")
+OUTPUT_PATH = os.path.join(_DATA_DIR, "news_sentiment_pred_latest.csv")
 
 # 模型参数（与训练时一致）
 EMBEDDING_DIM = 128
@@ -110,7 +113,9 @@ LABEL_MAP_REVERSE = {0: "negative", 1: "neutral", 2: "positive"}
 
 
 # 加载停用词
-def load_stopwords(file_path="stopwords.txt"):
+def load_stopwords(file_path=None):
+    if file_path is None:
+        file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stopwords.txt")
     try:
         with open(file_path, "r", encoding="utf8") as f:
             return set([line.strip() for line in f.readlines() if line.strip()])
@@ -125,46 +130,7 @@ def load_stopwords(file_path="stopwords.txt"):
 STOPWORDS = load_stopwords()
 
 
-# -------------------------- 3. Attention层 & 模型定义 --------------------------
-class AttentionLayer(nn.Module):
-    def __init__(self, hidden_dim):
-        super(AttentionLayer, self).__init__()
-        self.W = nn.Linear(hidden_dim * 2, hidden_dim * 2)
-        self.u = nn.Linear(hidden_dim * 2, 1, bias=False)
-
-    def forward(self, lstm_output):
-        score = torch.tanh(self.W(lstm_output))
-        attention_weights = torch.softmax(self.u(score), dim=1)
-        weighted_output = lstm_output * attention_weights
-        context_vector = torch.sum(weighted_output, dim=1)
-        return context_vector, attention_weights
-
-
-class BiLSTMAttention(nn.Module):
-    def __init__(self, vocab_size, embedding_dim, hidden_dim, num_layers, num_classes, dropout_rate):
-        super(BiLSTMAttention, self).__init__()
-        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
-        self.lstm = nn.LSTM(
-            embedding_dim, hidden_dim, num_layers=num_layers,
-            bidirectional=True, batch_first=True,
-            dropout=dropout_rate if num_layers > 1 else 0
-        )
-        self.attention = AttentionLayer(hidden_dim)
-        self.fc1 = nn.Linear(hidden_dim * 2, hidden_dim)
-        self.dropout = nn.Dropout(dropout_rate)
-        self.fc2 = nn.Linear(hidden_dim, num_classes)
-
-    def forward(self, x):
-        embed = self.embedding(x)
-        lstm_out, _ = self.lstm(embed)
-        context_vec, attn_weights = self.attention(lstm_out)
-        fc1_out = torch.relu(self.fc1(context_vec))
-        fc1_out = self.dropout(fc1_out)
-        logits = self.fc2(fc1_out)
-        return logits, attn_weights
-
-
-# -------------------------- 4. 文本预处理 & 预测器 --------------------------
+# -------------------------- 3. 文本预处理 & 预测器 --------------------------
 def preprocess_text(text):
     if not isinstance(text, str):
         text = str(text)  # 处理非字符串类型

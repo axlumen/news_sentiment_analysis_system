@@ -1,0 +1,34 @@
+# Django核心依赖
+Django==5.2.12
+
+# 数据库连接
+mysqlclient==2.2.4
+python-dotenv==1.0.0
+
+# 跨域支持
+django-cors-headers==4.4.0
+
+# 数据处理
+pandas==2.2.2
+numpy==1.26.4
+
+# 深度学习框架
+torch==2.3.1
+torchvision==0.18.1
+
+# 中文分词
+jieba==0.42.1
+
+# 可视化
+matplotlib==3.8.4
+wordcloud==1.9.3
+
+# 繁简体转换
+opencc-python-reimplemented==0.1.6
+
+# 图表库
+echarts-python==0.1.6
+
+# 其他工具
+requests==2.32.3
+beautifulsoup4==4.12.3
